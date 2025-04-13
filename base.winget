@@ -129,13 +129,6 @@ properties:
 
 # Configure packages
 
-    - resource: GitDsc/GitClone
-      directives:
-        description: Clone the nvim-config repository
-        allowPrerelease: false
-      settings:
-        HttpsUrl: https://github.com/FlippingBinary/nvim-config.git
-        RootDirectory: '${HOME}/.config/nvim/'
 
     - resource: Microsoft.Windows.Developer/DeveloperMode
       directives:
