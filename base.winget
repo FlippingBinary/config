@@ -19,6 +19,7 @@ properties:
       id: AstroComma.AstroGrep
       directives:
         description: Install AstroGrep
+        securityContext: elevated
         allowPrerelease: false
       settings:
         id: AstroComma.AstroGrep
@@ -74,6 +75,7 @@ properties:
       id: NickeManarin.ScreenToGif
       directives:
         description: Install ScreenToGif
+        securityContext: elevated
         allowPrerelease: false
       settings:
         id: NickeManarin.ScreenToGif
