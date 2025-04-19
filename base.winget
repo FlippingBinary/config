@@ -35,6 +35,7 @@ properties:
         source: winget
 
     - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: Git.Git
       directives:
         description: Install Git
         securityContext: elevated
