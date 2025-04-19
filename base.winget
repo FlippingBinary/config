@@ -67,6 +67,7 @@ properties:
       id: GoLang.Go
       directives:
         description: Install Go
+        securityContext: elevated
         allowPrerelease: false
       settings:
         id: GoLang.Go
