@@ -130,6 +130,15 @@ properties:
         source: winget
 
     - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: MiKTeX.MiKTeX
+      directives:
+        description: Install MiKTeX
+        allowPrerelease: false
+      settings:
+        id: MiKTeX.MiKTeX
+        source: winget
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: Neovim.Neovim
       directives:
         description: Install NeoVim
@@ -154,6 +163,16 @@ properties:
         allowPrerelease: false
       settings:
         id: sharkdp.fd
+        source: winget
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: StrawberryPerl.StrawberryPerl
+      directives:
+        description: Install Perl
+        securityContext: elevated
+        allowPrerelease: false
+      settings:
+        id: StrawberryPerl.StrawberryPerl
         source: winget
 
     - resource: Microsoft.WinGet.DSC/WinGetPackage
