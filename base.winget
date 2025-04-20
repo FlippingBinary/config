@@ -26,12 +26,30 @@ properties:
         source: winget
 
     - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: BurntSushi.ripgrep.MSVC
+      directives:
+        description: Install AstroGrep
+        allowPrerelease: false
+      settings:
+        id: BurntSushi.ripgrep.MSVC
+        source: winget
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: Canonical.Ubuntu.2404
       directives:
         description: Install Ubuntu 24.04
         allowPrerelease: false
       settings:
         id: Canonical.Ubuntu.2404
+        source: winget
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: DEVCOM.LuaJIT
+      directives:
+        description: Install LuaJIT for Lua Rocks
+        allowPrerelease: false
+      settings:
+        id: DEVCOM.LuaJIT
         source: winget
 
     - resource: Microsoft.WinGet.DSC/WinGetPackage
@@ -127,6 +145,15 @@ properties:
         allowPrerelease: false
       settings:
         id: Python.Python.3.13
+        source: winget
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: sharkdp.fd
+      directives:
+        description: Install FD
+        allowPrerelease: false
+      settings:
+        id: sharkdp.fd
         source: winget
 
     - resource: Microsoft.WinGet.DSC/WinGetPackage
