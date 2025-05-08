@@ -29,8 +29,20 @@ result in prompts to accept agreements like this:
 winget configure base.winget
 ```
 
-To update all packages without altering the list of installed packages:
+To update all installed packages, even if they were installed manually:
 
 ```ps1
 winget update --all
 ```
+
+## DSC groups
+
+The configuration is split into multiple DSC files for different purposes.
+
+| Filename | Purpose |
+| -- | -- |
+| `latex.winget` | LaTeX document compilation |
+| `python.winget` | Python development and package management |
+| `vaults.winget` | Local-first password management and file synchronization |
+| `verilog.winget` | Verilog development |
+| `wsl.winget` | Windows Subsystem for Linux |
