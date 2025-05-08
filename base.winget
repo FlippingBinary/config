@@ -63,15 +63,6 @@ properties:
         source: winget
 
     - resource: Microsoft.WinGet.DSC/WinGetPackage
-      id: GitHub.GitHubDesktop
-      directives:
-        description: Install GitHub Desktop
-        allowPrerelease: false
-      settings:
-        id: GitHub.GitHubDesktop
-        source: winget
-
-    - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: GnuWin32.Tar
       directives:
         description: Install GNU Tar
