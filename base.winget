@@ -35,15 +35,6 @@ properties:
         source: winget
 
     - resource: Microsoft.WinGet.DSC/WinGetPackage
-      id: Canonical.Ubuntu.2404
-      directives:
-        description: Install Ubuntu 24.04
-        allowPrerelease: false
-      settings:
-        id: Canonical.Ubuntu.2404
-        source: winget
-
-    - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: DEVCOM.LuaJIT
       directives:
         description: Install LuaJIT for Lua Rocks
