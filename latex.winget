@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+properties:
+
+  assertions:
+
+    - resource: Microsoft.Windows.Developer/OsVersion
+      directives:
+        description: Verify min OS version requirement
+        allowPrerelease: true
+      settings:
+        MinVersion: '10.0.22000'
+
+  resources:
+
+# Install software
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: MiKTeX.MiKTeX
+      directives:
+        description: Install MiKTeX
+        allowPrerelease: false
+      settings:
+        id: MiKTeX.MiKTeX
+        source: winget
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: StrawberryPerl.StrawberryPerl
+      directives:
+        description: Install Perl
+        securityContext: elevated
+        allowPrerelease: false
+      settings:
+        id: StrawberryPerl.StrawberryPerl
+        source: winget
+
+  configurationVersion: 0.2.0
