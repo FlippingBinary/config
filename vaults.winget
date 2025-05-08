@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+
+properties:
+
+  assertions:
+
+    - resource: Microsoft.Windows.Developer/OsVersion
+      directives:
+        description: Verify min OS version requirement
+        allowPrerelease: true
+      settings:
+        MinVersion: '10.0.22000'
+
+  resources:
+
+# Install software
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: KeePassXCTeam.KeePassXC
+      directives:
+        description: Install KeePassXC
+        allowPrerelease: false
+      settings:
+        id: KeePassXCTeam.KeePassXC
+        source: winget
+
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: Synology.DriveClient
+      directives:
+        description: Install Synology Drive Client
+        allowPrerelease: false
+      settings:
+        id: Synology.DriveClient
+        source: winget
+
+  configurationVersion: 0.2.0
