@@ -130,15 +130,6 @@ properties:
         source: winget
 
     - resource: Microsoft.WinGet.DSC/WinGetPackage
-      id: Python.Python.3.13
-      directives:
-        description: Install Python 3
-        allowPrerelease: false
-      settings:
-        id: Python.Python.3.13
-        source: winget
-
-    - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: sharkdp.fd
       directives:
         description: Install FD
