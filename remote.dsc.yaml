@@ -5,7 +5,7 @@ metadata:
     securityContext: elevated
 
 resources:
-- name: PS dependencies
+- name: Firewall rules for Remote Desktop
   type: Microsoft.Windows/WindowsPowerShell
   properties:
     resources:
@@ -13,41 +13,17 @@ resources:
       type: PSDesiredStateConfiguration/Script
       properties:
         GetScript: |
-          @{ Result = "This resource is here to install PS dependencies" }
-        TestScript: |
-          try {
-            $null = Get-InstalledModule -Name NetworkingDsc -ErrorAction Stop
-            return $true
-          } catch {
-            return $false
+          $rules = Get-NetFirewallRule -DisplayGroup "Remote Desktop" -ErrorAction SilentlyContinue
+          $active = $rules | Where-Object { $_.Enabled -eq 'True' }
+          if ($active.Count -eq 0) {
+            return @{ Result = "The Remote Desktop firewall group is disabled."}
+          } elseif ($rules.Count -gt $active.Count) {
+            return @{ Result = "The Remote Desktop firewall group is partially enabled."}
+          } else {
+            return @{ Result = "The Remote Desktop firewall group is enabled."}
           }
+        TestScript: |
+          $rules = Get-NetFirewallRule -DisplayGroup "Remote Desktop" -ErrorAction SilentlyContinue
+          return (($rules | Where-Object { $_.Enabled -eq 'True' }).Count -eq $rules.Count)
         SetScript: |
-          Install-Module -Name NetworkingDsc -Repository PSGallery -Force -Scope AllUsers
-
-- name: Firewall rules for Remote Desktop
-  type: Microsoft.Windows/WindowsPowerShell
-  properties:
-    dependsOn:
-    - "[resourceId('Microsoft.Windows/WindowsPowerShell','PS dependencies')]"
-    resources:
-    - name: Enable RemoteDesktop shadow in
-      type: NetworkingDsc/Firewall
-      properties:
-        Name: "RemoteDesktop-Shadow-In-TCP"
-        DisplayGroup: "Remote Desktop"
-        Ensure: Present
-        Enabled: True
-    - name: Enable RemoteDesktop usermode TCP
-      type: NetworkingDsc/Firewall
-      properties:
-        Name: "RemoteDesktop-UserMode-In-TCP"
-        DisplayGroup: "Remote Desktop"
-        Ensure: Present
-        Enabled: True
-    - name: Enable RemoteDesktop usermode UDP
-      type: NetworkingDsc/Firewall
-      properties:
-        Name: "RemoteDesktop-UserMode-In-UDP"
-        DisplayGroup: "Remote Desktop"
-        Ensure: Present
-        Enabled: True
+          Get-NetFirewallRule -DisplayGroup "Remote Desktop" -ErrorAction SilentlyContinue | Enable-NetFirewallRule
