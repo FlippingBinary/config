@@ -1,0 +1,208 @@
+# Install-PSResource Microsoft.WinGet.DSC -Prerelease
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+
+# Prohibit use in elevated contexts to avoid problems when using nvim config as a restricted user
+#
+# NOTE: The Microsoft.Windows/WindowsPowerShell adapter requires elevation,
+# so I'll need to find another way to create the profile script and link the nvim config.
+#
+# In the meantime, The nvim configuration can be linked with this command:
+#   New-Item -Path "${env:LOCALAPPDATA}\nvim" -ItemType SymbolicLink -Value "${env:LOCALAPPDATA}\nvim-config"
+# And the powershell configuration can be applied with this command:
+#  powershell -NoProfile -Command "if (!(Test-Path $PROFILE)) { New-Item -ItemType File -Path $PROFILE -Force | Out-Null }; if (!(Select-String -Path $PROFILE -Pattern '^Set-PSReadlineOption -EditMode Vi$' -Quiet)) { Add-Content -Path $PROFILE -Value ""Set-PSReadlineOption -EditMode Vi"" }"
+ 
+metadata:
+  Microsoft.DSC:
+    securityContext: restricted
+
+resources:
+- name: WinGet assertion
+  type: Microsoft.DSC/Assertion
+  properties:
+    $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+    resources:
+    - name: Use PowerShell resources for assertions
+      type: Microsoft.DSC/PowerShell
+      properties:
+        resources:
+        - name: NVM is available
+          type: Microsoft.WinGet.DSC/WinGetPackage
+          properties:
+            Id: CoreyButler.NVMforWindows
+            Source: winget
+            MatchOption: Equals
+        - name: Git is available
+          type: Microsoft.WinGet.DSC/WinGetPackage
+          properties:
+            Id: Git.Git
+            Source: winget
+            MatchOption: Equals
+        - name: NeoVim is available
+          type: Microsoft.WinGet.DSC/WinGetPackage
+          properties:
+            Id: Neovim.Neovim
+            Source: winget
+            MatchOption: Equals
+        - name: Lua is available
+          type: Microsoft.WinGet.DSC/WinGetPackage
+          properties:
+            Id: rjpcomputing.luaforwindows
+            Source: winget
+            MatchOption: Equals
+        - name: Rustup is available
+          type: Microsoft.WinGet.DSC/WinGetPackage
+          properties:
+            Id: Rustlang.Rustup
+            Source: winget
+            MatchOption: Equals
+
+- name: Local NeoVim config repository
+  type: Microsoft.DSC/PowerShell
+  properties:
+    dependsOn:
+    - "[resourceId('Microsoft.DSC/Assertion','WinGet assertion')]"
+    resources:
+    - name: Configure Git UserName
+      type: GitDsc/GitConfigUserName
+      properties:
+        UserName: "Jon Musselwhite"
+        ConfigLocation: global
+    - name: Configure Git UserEmail
+      type: GitDsc/GitConfigUserEmail
+      properties:
+        UserEmail: "35066367+FlippingBinary@users.noreply.github.com"
+        ConfigLocation: global
+    - name: Clone LazyVim configuration
+      type: GitDsc/GitClone
+      properties:
+        HttpsUrl: "https://github.com/FlippingBinary/nvim-config.git"
+        RootDirectory: "[envvar('LOCALAPPDATA')]"
+
+- name: LTS tools
+  type: Microsoft.DSC/Group
+  dependsOn:
+  - "[resourceId('Microsoft.DSC/Assertion','WinGet assertion')]"
+  properties:
+    $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+    resources:
+    - name: Install Node LTS
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        executable: nvm
+        arguments:
+          - "install"
+          - "lts"
+    - name: Use Node LTS
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        executable: nvm
+        arguments:
+          - "use"
+          - "lts"
+    - name: Update NPM
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        executable: C:\nvm4w\nodejs\npm.ps1
+        arguments:
+          - "install"
+          - "-g"
+          - "npm@latest"
+    - name: Update Rust
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        executable: rustup
+        arguments:
+          - "update"
+
+- name: NeoVim language providers
+  type: Microsoft.DSC/Group
+  dependsOn:
+  - "[resourceId('Microsoft.DSC/Group','LTS tools')]"
+  properties:
+    $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+    resources:
+    - name: NPM provider
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        executable: C:\nvm4w\nodejs\npm.ps1
+        arguments:
+          - "install"
+          - "-g"
+          - "neovim"
+    - name: Python provider
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        executable: pip
+        arguments:
+          - "python3"
+          - "-m"
+          - "pip"
+          - "install"
+          - "--user"
+          - "--upgrade"
+          - "pynvim"
+
+- name: Set PS profile to enable the Vi edit mode
+  type: Microsoft.DSC.Transitional/RunCommandOnSet
+  properties:
+    executable: powershell
+    arguments:
+      - "-NoProfile"
+      - "-Command"
+      - "if (!(Test-Path $PROFILE)) { New-Item -ItemType File -Path $PROFILE -Force | Out-Null }; if (!(Select-String -Path $PROFILE -Pattern '^Set-PSReadlineOption -EditMode Vi$' -Quiet)) { Add-Content -Path $PROFILE -Value \"Set-PSReadlineOption -EditMode Vi\" }"
+
+- name: Install NeoVim configuration
+  type: Microsoft.DSC/Group
+  dependsOn:
+  - "[resourceId('Microsoft.DSC/PowerShell','Local NeoVim config repository')]"
+  properties:
+    $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+    resources:
+    - name: Link NeoVim configuration to the repository directory
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        executable: powershell
+        arguments:
+          - "-NoProfile"
+          - "-Command"
+          - "New-Item -Path \"${env:LOCALAPPDATA}\\nvim\" -ItemType SymbolicLink -Value \"${env:LOCALAPPDATA}\\nvim-config\""
+
+- name: Turn on hidden file view in Windows Explorer
+  type: Microsoft.Windows/Registry
+  properties:
+    keyPath: HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+    valueName: Hidden
+    valueData:
+      DWord: 1
+
+- name: Turn on file extensions in Windows Explorer
+  type: Microsoft.Windows/Registry
+  properties:
+    keyPath: HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+    valueName: HideFileExt
+    valueData:
+      DWord: 0
+
+- name: Turn off item checkboxes in Windows Explorer
+  type: Microsoft.Windows/Registry
+  properties:
+    keyPath: HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+    valueName: AutoCheckSelect
+    valueData:
+      DWord: 0
+
+- name: Turn on dark mode for apps
+  type: Microsoft.Windows/Registry
+  properties:
+    keyPath: HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize
+    valueName: AppsUseLightTheme
+    valueData:
+      DWord: 0
+
+- name: Turn on dark mode for the system
+  type: Microsoft.Windows/Registry
+  properties:
+    keyPath: HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize
+    valueName: SystemUsesLightTheme
+    valueData:
+      DWord: 0

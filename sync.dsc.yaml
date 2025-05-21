@@ -1,0 +1,43 @@
+# Install-PSResource PSDesiredStateConfiguration
+# Install-PSResource Microsoft.WinGet.DSC -Prerelease
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+
+resources:
+- name: Use class PowerShell resources
+  type: Microsoft.Windows/WindowsPowerShell
+  properties:
+    resources:
+    - name: OpenSSH Agent
+      type: PsDesiredStateConfiguration/Service
+      properties:
+        Name: ssh-agent
+        StartupType: Automatic
+        State: Running
+
+- name: Use PowerShell resources
+  type: Microsoft.DSC/PowerShell
+  properties:
+    resources:
+    - name: Install KeePassXC
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: KeePassXCTeam.KeePassXC
+        Source: winget
+        Version: 2.7.10
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+
+    - name: Install Synology Drive Client
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: Synology.DriveClient
+        Source: winget
+        Version: 7.5.2.16111
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent

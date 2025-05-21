@@ -1,48 +1,35 @@
-# Windows Development Environment
+# Jon's DSC Collection
 
-This repository holds a configuration for a development environment. It is always
-a work in progress.
+This repository holds some DSC files for a development environment.
+It is always a work in progress and is being shared for convenience and so
+other people can see how I'm using DSC.
 
-Apply the configuration using `winget`.
+## Dependencies
 
-## Enable DSC
-
-The `winget configure` feature must be enabled before configurations can be applied.
-
-```ps1
-winget configure --enable
-```
-
-## Apply configuration
-
-The first time `winget` is used, there are agreements that have to be accepted.
-They can be accepted automatically with command line options like this:
-
-```ps
-winget configure --accept-configuration-agreements --disable-interactivity -f base.winget
-```
-
-Alternatively, the configuration can be applied with a simpler command that might
-result in prompts to accept agreements like this:
+DSCv3 is required, but it's easy to install with WinGet:
 
 ```ps1
-winget configure base.winget
+winget install --id Microsoft.DSC -e
 ```
 
-To update all installed packages, even if they were installed manually:
+Most of these configuration files lean on the `Microsoft.Windows/WindowsPowerShell`
+resource, which uses WinRM. It is not enabled by default, but can be enabled
+by running `boostrap.ps1` from this repository as an administrator.
 
-```ps1
-winget update --all
-```
+## Applying the configuration
 
-## DSC groups
+The configuration files all require an elevated terminal, so open Windows
+Terminal as administrator before applying them. The notable exception is
+`home.dsc.yaml`, which clones a repository for NeoVim configuration. If that
+repository is cloned by the administrator, there will be problems using it
+as an unprivileged user. For that reason, it won't allow the administrator
+to run it.
 
-The configuration is split into multiple DSC files for different purposes.
+| Computer | RunAs | Command |
+| -------- | ---- | ------- |
+| Office   | Admin | `dsc config set --file .\office.dsc.yaml` |
+| Tablet | Admin | `dsc config set --file .\tablet.dsc.yaml` |
+| Office | Jon | `dsc config set --file .\home.dsc.yaml` |
 
-| Filename | Purpose |
-| -- | -- |
-| `latex.winget` | LaTeX document compilation |
-| `python.winget` | Python development and package management |
-| `vaults.winget` | Local-first password management and file synchronization |
-| `verilog.winget` | Verilog development |
-| `wsl.winget` | Windows Subsystem for Linux |
+*Obviously, these configurations are tailored to me, so don't use them
+without making changes to these files to meet your own needs.*

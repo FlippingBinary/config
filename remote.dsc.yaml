@@ -1,0 +1,53 @@
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+
+resources:
+- name: PS dependencies
+  type: Microsoft.Windows/WindowsPowerShell
+  properties:
+    resources:
+    - name: script
+      type: PSDesiredStateConfiguration/Script
+      properties:
+        GetScript: |
+          @{ Result = "This resource is here to install PS dependencies" }
+        TestScript: |
+          try {
+            $null = Get-InstalledModule -Name NetworkingDsc -ErrorAction Stop
+            return $true
+          } catch {
+            return $false
+          }
+        SetScript: |
+          Install-Module -Name NetworkingDsc -Repository PSGallery -Force -Scope AllUsers
+
+- name: Firewall rules for Remote Desktop
+  type: Microsoft.Windows/WindowsPowerShell
+  properties:
+    dependsOn:
+    - "[resourceId('Microsoft.Windows/WindowsPowerShell','PS dependencies')]"
+    resources:
+    - name: Enable RemoteDesktop shadow in
+      type: NetworkingDsc/Firewall
+      properties:
+        Name: "RemoteDesktop-Shadow-In-TCP"
+        DisplayGroup: "Remote Desktop"
+        Ensure: Present
+        Enabled: True
+    - name: Enable RemoteDesktop usermode TCP
+      type: NetworkingDsc/Firewall
+      properties:
+        Name: "RemoteDesktop-UserMode-In-TCP"
+        DisplayGroup: "Remote Desktop"
+        Ensure: Present
+        Enabled: True
+    - name: Enable RemoteDesktop usermode UDP
+      type: NetworkingDsc/Firewall
+      properties:
+        Name: "RemoteDesktop-UserMode-In-UDP"
+        DisplayGroup: "Remote Desktop"
+        Ensure: Present
+        Enabled: True

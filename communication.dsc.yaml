@@ -1,0 +1,59 @@
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+
+resources:
+- name: PS dependencies
+  type: Microsoft.Windows/WindowsPowerShell
+  properties:
+    resources:
+    - name: script
+      type: PSDesiredStateConfiguration/Script
+      properties:
+        GetScript: |
+          @{ Result = "This resource is here to install PS dependencies" }
+        TestScript: |
+          try {
+            $null = Get-InstalledModule -Name Microsoft.WinGet.DSC -ErrorAction Stop
+            return $true
+          } catch {
+            return $false
+          }
+        SetScript: |
+          Install-Module -Name Microsoft.WinGet.DSC -Repository PSGallery -Force -Scope AllUsers
+
+- name: WinGet packages
+  type: Microsoft.DSC/PowerShell
+  properties:
+    dependsOn:
+    - "[resourceId('Microsoft.Windows/WindowsPowerShell','PS dependencies')]"
+    resources:
+    - name: Install Thunderbird
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: Mozilla.Thunderbird
+        Version: 138.0.2
+        Source: winget
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install Signal
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: OpenWhisperSystems.Signal
+        Version: 7.55.0
+        Source: winget
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install Discord
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: Discord.Discord
+        Version: 1.0.9192
+        Source: winget
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent

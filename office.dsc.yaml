@@ -1,0 +1,48 @@
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+
+resources:
+
+- name: Communication tools
+  type: Microsoft.DSC/Include
+  dependsOn:
+  - "[resourceId('Microsoft.DSC/Assertion','Windows desktop')]"
+  properties:
+    configurationFile: communication.dsc.yaml
+
+- name: Synchronization tools
+  type: Microsoft.DSC/Include
+  dependsOn:
+  - "[resourceId('Microsoft.DSC/Assertion','Windows desktop')]"
+  properties:
+    configurationFile: sync.dsc.yaml
+
+- name: Linux tools
+  type: Microsoft.DSC/Include
+  dependsOn:
+  - "[resourceId('Microsoft.DSC/Assertion','Windows desktop')]"
+  properties:
+    configurationFile: wsl.dsc.yaml
+
+- name: Development tools
+  type: Microsoft.DSC/Include
+  dependsOn:
+  - "[resourceId('Microsoft.DSC/Assertion','Windows desktop')]"
+  properties:
+    configurationFile: ide.dsc.yaml
+
+- name: Remote desktop
+  type: Microsoft.DSC/Include
+  dependsOn:
+  - "[resourceId('Microsoft.DSC/Assertion','Windows desktop')]"
+  properties:
+    configurationFile: remote.dsc.yaml
+
+- name: Windows desktop
+  type: Microsoft.DSC/Assertion
+  properties:
+    $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+    resources:
+    - name: os
+      type: Microsoft/OSInfo
+      properties:
+        family: Windows

@@ -1,0 +1,380 @@
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+
+resources:
+- name: PS dependencies
+  type: Microsoft.Windows/WindowsPowerShell
+  properties:
+    resources:
+    - name: script
+      type: PSDesiredStateConfiguration/Script
+      properties:
+        GetScript: |
+          @{ Result = "This resource is here to install PS dependencies" }
+        TestScript: |
+          try {
+            $null = Get-InstalledModule -Name Microsoft.VisualStudio.DSC -ErrorAction Stop
+            $null = Get-InstalledModule -Name Microsoft.WinGet.DSC -ErrorAction Stop
+            $null = Get-InstalledModule -Name NerdFonts -ErrorAction Stop
+            return $true
+          } catch {
+            return $false
+          }
+        SetScript: |
+          Install-Module -Name Microsoft.VisualStudio.DSC -Repository PSGallery -Force -Scope AllUsers
+          Install-Module -Name Microsoft.WinGet.DSC -Repository PSGallery -Force -Scope AllUsers
+          Install-Module -Name NerdFonts -Repository PSGallery -Force -Scope AllUsers
+
+- name: WinGet packages
+  type: Microsoft.DSC/PowerShell
+  properties:
+    dependsOn:
+    - "[resourceId('Microsoft.Windows/WindowsPowerShell','PS dependencies')]"
+    resources:
+    - name: Install AstroGrep
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: AstroComma.AstroGrep
+        Source: winget
+        Version: 4.4.9
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install ripgrep
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: BurntSushi.ripgrep.MSVC
+        Source: winget
+        Version: 14.1.1
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install Node Version Manager
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: CoreyButler.NVMforWindows
+        Source: winget
+        Version: 1.2.2
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Remove LuaJIT
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: DEVCOM.LuaJIT
+        Ensure: Absent
+        Source: winget
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install Lua
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: rjpcomputing.luaforwindows
+        Source: winget
+        Version: 5.1.5.52
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install Git
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: Git.Git
+        Source: winget
+        Version: 2.49.0
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install GNU Tar
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: GnuWin32.Tar
+        Source: winget
+        Version: 1.13-1
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install Go
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: GoLang.Go
+        Source: winget
+        Version: 1.24.3
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install LazyGit
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: JesseDuffield.lazygit
+        Source: winget
+        Version: 0.50.0
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install ScreenToGif
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: NickeManarin.ScreenToGif
+        Source: winget
+        Version: 2.41.2
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install VisualStudio 2022 Build Tools
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: Microsoft.VisualStudio.2022.BuildTools
+        Source: winget
+        Version: 17.14.0
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install PowerShell
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: Microsoft.PowerShell
+        Source: winget
+        Version: 7.5.1.0
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install PowerToys
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: Microsoft.PowerToys
+        Source: winget
+        Version: 0.91.0
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install NeoVim
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: Neovim.Neovim
+        Source: winget
+        Version: 0.11.1
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install Python 3.10
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Ensure: Absent
+        Id: Python.Python.3.10
+        Source: winget
+        Version: 3.10.11
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install Python 3.11
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Ensure: Absent
+        Id: Python.Python.3.11
+        Source: winget
+        Version: 3.11.9
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install Python 3.12
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Ensure: Absent
+        Id: Python.Python.3.12
+        Source: winget
+        Version: 3.12.10
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install Python 3.13
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: Python.Python.3.13
+        Source: winget
+        Version: 3.13.3
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install Rustup
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: Rustlang.Rustup
+        Source: winget
+        Version: 1.28.2
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install FD
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: sharkdp.fd
+        Source: winget
+        Version: 10.2.0
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install WinMerge
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: WinMerge.WinMerge
+        Source: winget
+        Version: 2.16.48.2
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install Zig
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: zig.zig
+        Source: winget
+        Version: 0.14.0
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+
+- name: Purge Git-bundled OpenSSH
+  type: Microsoft.Windows/WindowsPowerShell
+  properties:
+    dependsOn:
+    - "[resourceId('Microsoft.DSC/PowerShell','WinGet packages')]"
+    resources:
+    - name: Remove scp bundled with Git
+      type: PSDesiredStateConfiguration/File
+      properties:
+        DestinationPath: C:\Program Files\Git\usr\bin\scp.exe
+        Ensure: Absent
+    - name: Remove sftp bundled with Git
+      type: PSDesiredStateConfiguration/File
+      properties:
+        DestinationPath: C:\Program Files\Git\usr\bin\sftp.exe
+        Ensure: Absent
+    - name: Remove ssh bundled with Git
+      type: PSDesiredStateConfiguration/File
+      properties:
+        DestinationPath: C:\Program Files\Git\usr\bin\ssh.exe
+        Ensure: Absent
+    - name: Remove ssh-add bundled with Git
+      type: PSDesiredStateConfiguration/File
+      properties:
+        DestinationPath: C:\Program Files\Git\usr\bin\ssh-add.exe
+        Ensure: Absent
+    - name: Remove ssh-agent bundled with Git
+      type: PSDesiredStateConfiguration/File
+      properties:
+        DestinationPath: C:\Program Files\Git\usr\bin\ssh-agent.exe
+        Ensure: Absent
+    - name: Remove ssh-keygen bundled with Git
+      type: PSDesiredStateConfiguration/File
+      properties:
+        DestinationPath: C:\Program Files\Git\usr\bin\ssh-keygen.exe
+        Ensure: Absent
+    - name: Remove ssh-keyscan bundled with Git
+      type: PSDesiredStateConfiguration/File
+      properties:
+        DestinationPath: C:\Program Files\Git\usr\bin\ssh-keyscan.exe
+        Ensure: Absent
+
+# - name: Turn on allow all trusted apps (Developer Mode)
+#   type: Microsoft.Windows/Registry
+#   properties:
+#     keyPath: HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock
+#     valueName: AllowAllTrustedApps
+#     valueData:
+#       DWord: 1
+
+- name: Turn on development without dev license (Developer Mode)
+  type: Microsoft.Windows/Registry
+  properties:
+    keyPath: HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock
+    valueName: AllowDevelopmentWithoutDevLicense
+    valueData:
+      DWord: 1
+
+# Visual Studio component names found here:
+# https://learn.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022&preserve-view=true
+- name: Visual Studio Build Tools
+  type: Microsoft.DSC/PowerShell
+  dependsOn:
+  - "[resourceId('Microsoft.DSC/PowerShell','WinGet packages')]"
+  - "[resourceId('Microsoft.Windows/WindowsPowerShell','PS dependencies')]"
+  properties:
+    resources:
+    - name: Select Visual Studio Build Tools
+      type: Microsoft.VisualStudio.DSC/VSComponents
+      properties:
+        ProductId: Microsoft.VisualStudio.Product.BuildTools
+        ChannelId: VisualStudio.17.Release
+        Components:
+        - Microsoft.VisualStudio.Workload.VCTools
+        - Microsoft.VisualStudio.Component.VC.Tools.x86.x64
+        - Microsoft.VisualStudio.Component.Windows11SDK.22621
+
+- name: Visual Studio Build Tools available to Rust
+  type: Microsoft.Windows/WindowsPowerShell
+  dependsOn:
+  - "[resourceId('Microsoft.DSC/PowerShell','Visual Studio Build Tools')]"
+  properties:
+    resources:
+    - name: PATH includes Microsoft Visual Studio Build Tools
+      type: PSDesiredStateConfiguration/Script
+      properties:
+        GetScript: |
+          $msvcBase = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC"
+          $latestVersion = Get-ChildItem -Path $msvcBase | Sort-Object Name -Descending | Select-Object -First 1
+          $msvcBinPath = Join-Path -Path $latestVersion.FullName -ChildPath "bin\HostX64\x64"
+          @{
+            GetScript = $GetScript
+            TestScript = $TestScript
+            SetScript = $SetScript
+            Result = $msvcBinPath
+          }
+        TestScript: |
+          $msvcBase = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC"
+          $latestVersion = Get-ChildItem -Path $msvcBase | Sort-Object Name -Descending | Select-Object -First 1
+          $msvcBinPath = Join-Path -Path $latestVersion.FullName -ChildPath "bin\HostX64\x64"
+          $currentPath = [System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::Machine)
+          $pathEntries = $currentPath.ToLower() -split ';'
+          return $pathEntries -contains $msvcBinPath.ToLower()
+        SetScript: |
+          $msvcBase = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC"
+          $latestVersion = Get-ChildItem -Path $msvcBase | Sort-Object Name -Descending | Select-Object -First 1
+          $msvcBinPath = Join-Path -Path $latestVersion.FullName -ChildPath "bin\HostX64\x64"
+          $currentPath = [System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::Machine)
+          $pathEntries = $currentPath.ToLower() -split ';'
+          if (-not ($pathEntries -contains $msvcBinPath.ToLower())) {
+            [System.Environment]::SetEnvironmentVariable('Path', $currentPath + ";$msvcBinPath", [System.EnvironmentVariableTarget]::Machine)
+          }
+
+- name: NerdFonts
+  type: Microsoft.Windows/WindowsPowerShell
+  dependsOn:
+  - "[resourceId('Microsoft.Windows/WindowsPowerShell','PS dependencies')]"
+  properties:
+    resources:
+    - name: 0xProto NerdFont
+      type: PSDesiredStateConfiguration/Script
+      properties:
+        GetScript: |
+          try {
+            $installedFonts = Get-ChildItem -Path "C:\\Windows\\Fonts" -Filter "*.ttf" | Select-String -Pattern '0xProto'
+            return @{ Result = "$installedFonts.FullPath" }
+          } catch {
+            return @{ Result = "Failed while searching for installed font" }
+          }
+        TestScript: |
+          try {
+            $installedFonts = Get-ChildItem -Path "C:\\Windows\\Fonts" -Filter "*.ttf" | Select-String -Pattern '0xProto'
+            if ($installedFonts -ne $null) {
+              return $true
+            } else {
+              return $false
+            }
+          } catch {
+            return $false
+          }
+        SetScript: |
+          Import-Module NerdFonts
+          Install-NerdFont -Name '0xProto' -Scope AllUsers
