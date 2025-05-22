@@ -34,6 +34,15 @@ resources:
     dependsOn:
     - "[resourceId('Microsoft.Windows/WindowsPowerShell','PS dependencies')]"
     resources:
+    - name: Install 7zip
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: 7zip.7zip
+        Version: 24.09
+        Source: winget
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
     - name: Install AstroGrep
       type: Microsoft.WinGet.DSC/WinGetPackage
       properties:
