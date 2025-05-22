@@ -30,21 +30,29 @@ resources:
     dependsOn:
     - "[resourceId('Microsoft.Windows/WindowsPowerShell','PS dependencies')]"
     resources:
-    - name: Install MiKTeX
+    - name: Install Obsidian
       type: Microsoft.WinGet.DSC/WinGetPackage
       properties:
-        Id: MiKTeX.MiKTeX
-        Version: 24.1
+        Id: Obsidian.Obsidian
+        Version: 1.8.10
         Source: winget
         UseLatest: True
         MatchOption: Equals
         InstallMode: Silent
-
     - id: Install StrawberryPerl
       type: Microsoft.WinGet.DSC/WinGetPackage
       properties:
         Id: StrawberryPerl.StrawberryPerl
         Version: 5.40.2.1
+        Source: winget
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
+    - name: Install MiKTeX
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: MiKTeX.MiKTeX
+        Version: 24.1
         Source: winget
         UseLatest: True
         MatchOption: Equals

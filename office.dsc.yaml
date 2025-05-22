@@ -23,6 +23,13 @@ resources:
   properties:
     configurationFile: wsl.dsc.yaml
 
+- name: Document tools
+  type: Microsoft.DSC/Include
+  dependsOn:
+  - "[resourceId('Microsoft.DSC/Assertion','Windows desktop')]"
+  properties:
+    configurationFile: docs.dsc.yaml
+
 - name: Development tools
   type: Microsoft.DSC/Include
   dependsOn:
