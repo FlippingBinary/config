@@ -206,6 +206,28 @@ resources:
           - "--upgrade"
           - "pynvim"
 
+# This resource just updates the PlatformIO library. It does not install the CLI.
+# That is a bit tricky to install with DSC tools because the custom script
+# resource requires administrative privileges, but the installer needs to be
+# run as an unprivileged user. For now, it has to be installed manually, but
+# there is a script called `get-platformio.ps1` that should fill in the gap.
+- name: PlatformIO
+  type: Microsoft.DSC/Group
+  dependsOn:
+  - "[resourceId('Microsoft.DSC/Group','Node version management')]"
+  properties:
+    $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+    resources:
+    - name: Python package
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        executable: pip
+        arguments:
+          - "install"
+          - "--user"
+          - "--upgrade"
+          - "platformio"
+
 - name: Set PS profile to enable the Vi edit mode
   type: Microsoft.DSC.Transitional/RunCommandOnSet
   properties:
