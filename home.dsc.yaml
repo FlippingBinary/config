@@ -78,7 +78,7 @@ resources:
         HttpsUrl: "https://github.com/FlippingBinary/nvim-config.git"
         RootDirectory: "[envvar('LOCALAPPDATA')]"
 
-- name: LTS tools
+- name: Node version management
   type: Microsoft.DSC/Group
   dependsOn:
   - "[resourceId('Microsoft.DSC/Assertion','WinGet assertion')]"
@@ -102,33 +102,97 @@ resources:
     - name: Update NPM
       type: Microsoft.DSC.Transitional/RunCommandOnSet
       properties:
-        executable: C:\nvm4w\nodejs\npm.ps1
+        executable: powershell
         arguments:
-          - "install"
-          - "-g"
-          - "npm@latest"
+          - "-NoProfile"
+          - "-Command"
+          - "npm install -g npm@latest"
+
+- name: Rust version management
+  type: Microsoft.DSC/Group
+  dependsOn:
+  - "[resourceId('Microsoft.DSC/Assertion','WinGet assertion')]"
+  properties:
+    $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+    resources:
     - name: Update Rust
       type: Microsoft.DSC.Transitional/RunCommandOnSet
       properties:
         executable: rustup
         arguments:
           - "update"
+    - name: WASM target
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        executable: rustup
+        arguments:
+          - "target"
+          - "add" 
+          - "wasm32-unknown-unknown"
+    - name: Rust 1.74
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        executable: rustup
+        arguments:
+          - "install"
+          - "1.74"
+    - name: Rust stable
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        executable: rustup
+        arguments:
+          - "install"
+          - "stable"
+    - name: Rust nightly
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        executable: rustup
+        arguments:
+          - "install"
+          - "nightly"
+    - name: RustAnalyzer for 1.74
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        executable: rustup
+        arguments:
+          - "+1.74"
+          - "component"
+          - "add"
+          - "rust-analyzer"
+    - name: RustAnalyzer for stable
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        executable: rustup
+        arguments:
+          - "+stable"
+          - "component"
+          - "add"
+          - "rust-analyzer"
+    - name: RustAnalyzer for nightly
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        executable: rustup
+        arguments:
+          - "+stable"
+          - "component"
+          - "add"
+          - "rust-analyzer"
 
 - name: NeoVim language providers
   type: Microsoft.DSC/Group
   dependsOn:
-  - "[resourceId('Microsoft.DSC/Group','LTS tools')]"
+  - "[resourceId('Microsoft.DSC/Group','Node version management')]"
   properties:
     $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
     resources:
     - name: NPM provider
       type: Microsoft.DSC.Transitional/RunCommandOnSet
       properties:
-        executable: C:\nvm4w\nodejs\npm.ps1
+        executable: powershell
         arguments:
-          - "install"
-          - "-g"
-          - "neovim"
+          - "-NoProfile"
+          - "-Command"
+          - "npm install -g neovim"
     - name: Python provider
       type: Microsoft.DSC.Transitional/RunCommandOnSet
       properties:
