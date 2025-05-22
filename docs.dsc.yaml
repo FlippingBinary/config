@@ -39,6 +39,15 @@ resources:
         UseLatest: True
         MatchOption: Equals
         InstallMode: Silent
+    - name: Install SumatraPDF
+      type: Microsoft.WinGet.DSC/WinGetPackage
+      properties:
+        Id: SumatraPDF.SumatraPDF
+        Version: 3.5.2
+        Source: winget
+        UseLatest: True
+        MatchOption: Equals
+        InstallMode: Silent
     - id: Install StrawberryPerl
       type: Microsoft.WinGet.DSC/WinGetPackage
       properties:
