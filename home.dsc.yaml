@@ -193,6 +193,13 @@ resources:
           - "-NoProfile"
           - "-Command"
           - "npm install -g neovim"
+    - name: Treesitter CLI
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        executable: cargo
+        arguments:
+          - "install"
+          - "tree-sitter-cli"
     - name: Python provider
       type: Microsoft.DSC.Transitional/RunCommandOnSet
       properties:
