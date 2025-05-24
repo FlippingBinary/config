@@ -96,9 +96,11 @@ resources:
         UseLatest: True
         MatchOption: Equals
         InstallMode: Silent
+    # Windows comes preinstalled with tar now
     - name: Install GNU Tar
       type: Microsoft.WinGet.DSC/WinGetPackage
       properties:
+        Ensure: Absent
         Id: GnuWin32.Tar
         Version: 1.13-1
         Source: winget
