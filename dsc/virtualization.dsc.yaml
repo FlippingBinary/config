@@ -1,0 +1,94 @@
+$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+
+NOT READY FOR USE
+
+metadata:
+  Microsoft.DSC:
+    securityContext: elevated
+
+resources:
+- name: Virtualization features
+  type: Microsoft.Windows/WindowsPowerShell
+  properties:
+    resources:
+    - name: Containers
+      type: PSDesiredStateConfiguration/WindowsOptionalFeature
+      properties:
+        Name: containers
+    - name: Microsoft-Hyper-V
+      type: PSDesiredStateConfiguration/WindowsOptionalFeature
+      properties:
+        Name: Microsoft-Hyper-V
+
+- name: PS dependencies
+  type: Microsoft.Windows/WindowsPowerShell
+  properties:
+    resources:
+    - name: script
+      type: PSDesiredStateConfiguration/Script
+      properties:
+        GetScript: |
+          @{ Result = "This resource is here to install PS dependencies" }
+        TestScript: |
+          try {
+            $null = Get-InstalledModule -Name Microsoft.WinGet.DSC -ErrorAction Stop
+            return $true
+          } catch {
+            return $false
+          }
+        SetScript: |
+          Install-Module -Name Microsoft.WinGet.DSC -Repository PSGallery -Force -Scope AllUsers
+
+- name: Docker service
+  type: Microsoft.DSC/Group
+  dependsOn:
+  - "[resourceId('Microsoft.Windows/WindowsPowerShell','PS dependencies')]"
+  - "[resourceId('Microsoft.Windows/WindowsPowerShell','Virtualization features')]"
+  properties:
+    $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+    resources:
+    - name: Docker CLI
+      type: Microsoft.DSC/PowerShell
+      properties:
+        resources:
+        - name: winget
+          # Docker CLI contains both `docker.exe` and `dockerd.exe`, but doesn't set up a service
+          type: Microsoft.WinGet.DSC/WinGetPackage
+          properties:
+            Id: Docker.DockerCLI
+            Version: 28.1.1
+            Source: winget
+            UseLatest: True
+            MatchOption: Equals
+            InstallMode: Silent
+
+    - name: Register Docker service
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        dependsOn:
+        - "[resourceId('Microsoft.DSC/PowerShell','Docker CLI')]"
+        executable: dockerd
+        arguments:
+          - "--register-service"
+
+    - name: Start Docker service
+      type: Microsoft.DSC.Transitional/RunCommandOnSet
+      properties:
+        dependsOn:
+        - "[resourceId('Microsoft.DSC.Transitional/RunCommandOnSet','Start Docker service')]"
+        executable: powershell
+        arguments:
+          - "-NoProfile"
+          - "-Command"
+          - "Start-Service docker"
+
+- name: Containerd
+  type: Microsoft.DSC.Transitional/RunCommandOnSet
+  properties:
+    dependsOn:
+    executable: powershell
+    arguments:
+    - "-NoProfile"
+    - "-ExecutionPolicy"
+    - "Bypass"
+    - "https://raw.githubusercontent.com/kubernetes-sigs/sig-windows-tools/master/hostprocess/Install-Containerd.ps1"
