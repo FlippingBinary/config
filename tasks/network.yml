@@ -1,0 +1,13 @@
+---
+- name: Network on Windows
+  when: ansible_system == "Windows"
+  block:
+    - name: Set hostname
+      tags: ["hostname"]
+      ansible.windows.win_hostname:
+        name: "{{ custom_hostname }}"
+      register: hostname_result
+
+    - name: Activate network changes with reboot
+      ansible.windows.win_reboot:
+      when: hostname_result.reboot_required

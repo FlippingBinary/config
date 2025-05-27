@@ -1,0 +1,8 @@
+---
+- name: Reboot (Linux)
+  ansible.builtin.reboot:
+  when: reboot_required && ansible_system != "Windows"
+
+- name: Reboot (Windows)
+  ansible.windows.win_reboot:
+  when: reboot_required && ansible_system == "Windows"

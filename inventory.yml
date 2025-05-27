@@ -1,0 +1,18 @@
+workstation:
+  cougar:
+  thinkpad:
+
+services:
+  proxmox:
+  kube-controller:
+    kube-1:
+    kube-2:
+  kube-worker:
+    worker-1:
+    worker-2:
+    worker-3:
+    worker-4:
+  iot:
+    baier:
+    kentucky:
+    york:

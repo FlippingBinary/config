@@ -1,0 +1,30 @@
+---
+- name: System management
+  hosts: all
+
+  tasks:
+    - name: "Load {{ ansible_os_family }} defaults"
+      ansible.builtin.include_vars:
+        file: "{{ ansible_os_family | lower }}.yml"
+        name: os_family_defaults
+      ignore_errors: yes
+
+    - name: Update network
+      tags: ["never", "hostname", "network"]
+      ansible.builtin.import_tasks:
+        file: tasks/network.yml
+
+    - name: Update features
+      tags: ["features"]
+      ansible.builtin.import_tasks:
+        file: tasks/features.yml
+
+    - name: Update packages
+      tags: ["packages"]
+      ansible.builtin.import_tasks:
+        file: tasks/packages.yml
+
+    - name: Update hotfixes
+      tags: ["hotfixes"]
+      ansible.builtin.import_tasks:
+        file: tasks/hotfixes.yml

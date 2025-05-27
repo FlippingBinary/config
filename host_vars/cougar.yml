@@ -1,0 +1,29 @@
+---
+diagnostics: true
+optional_features:
+  Microsoft-Hyper-V: true
+  Microsoft-Windows-Subsystem-Linux: true
+  VirtualMachinePlatform: true
+software_packages:
+  Canonical.Ubuntu.2404: true
+  Discord.Discord: true
+  # Maxon.CinebenchR23: true
+  Microsoft.DSC: true
+  # Nvidia.PhysX: true
+  REALiX.HWiNFO: true
+  RussellBanks.Komac: true
+  Zen-Team.Zen-Browser: true
+fonts:
+- "0xProto Nerd Font"
+remove_files:
+- "C:\\Program Files\\Git\\usr\\bin\\scp.exe"
+- "C:\\Program Files\\Git\\usr\\bin\\sftp.exe"
+- "C:\\Program Files\\Git\\usr\\bin\\ssh-add.exe"
+- "C:\\Program Files\\Git\\usr\\bin\\ssh-agent.exe"
+- "C:\\Program Files\\Git\\usr\\bin\\ssh-keygen.exe"
+- "C:\\Program Files\\Git\\usr\\bin\\ssh-keyscan.exe"
+- "C:\\Program Files\\Git\\usr\\bin\\ssh.exe"
+firewall_rules:
+  RemoteDesktop-Shadow-In-TCP: true
+  RemoteDesktop-UserMode-In-TCP: true
+  RemoteDesktop-UserMode-In-UDP: true

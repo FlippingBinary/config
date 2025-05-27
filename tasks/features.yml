@@ -1,0 +1,61 @@
+---
+- name: Features on Windows
+  when: ansible_system == "Windows"
+  block:
+    - name: Enable Windows optional features.
+      ansible.windows.win_optional_feature:
+        name: "{{ windows_feature.key }}"
+        state: "{{ 'present' if windows_feature.value else 'absent' }}"
+        include_parent: true
+      loop: "{{ optional_features | dict2items }}"
+      loop_control:
+        loop_var: windows_feature
+      register: feature_status
+
+    - name: Turn on development without dev license (Developer Mode)
+      ansible.windows.win_regedit:
+        path: HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock
+        name: AllowDevelopmentWithoutDevLicense
+        data: 1
+        type: dword
+
+    - name: Configure firewall rules
+      loop: "{{ firewall_rules | dict2items }}"
+      ansible.windows.win_powershell:
+        parameters:
+          Name: "{{ item.key }}"
+          Enabled: "{{ item.value }}"
+        script: |
+          [CmdletBinding(SupportsShouldProcess)]
+          param (
+            [String]
+            $Name,
+
+            [Switch]
+            $Enabled = $false
+          )
+
+          $rule = Get-NetFirewallRule -Name $Name -ErrorAction SilentlyContinue
+          $Ansible.Result = [PSCustomObject]@{
+            before_rule = $rule
+            rule = $null
+          }
+
+          if ($rule.Enabled -eq $Enabled) {
+            $Ansible.Changed = $false
+          } elseif ($PSCmdlet.ShouldProcess('target')) {
+            if ($Enabled) {
+              $Ansible.Result.rule = $rule | Enable-NetFirewallRule
+            } else {
+              $Ansible.Result.rule = $rule | Disable.NetFirewallRule
+            }
+          } elseif ($Enabled) {
+            $Ansible.Result.rule = $rule | Enable-NetFirewallRule -WhatIf
+          } else {
+            $Ansible.Result.rule = $rule | Disable.NetFirewallRule -WhatIf
+          }
+
+    - name: Activate features with reboot
+      ansible.windows.win_reboot:
+      when: item.reboot_required
+      loop: "{{ feature_status.results }}"
