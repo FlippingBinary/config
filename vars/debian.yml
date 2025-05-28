@@ -1,0 +1,5 @@
+software_packages:
+  lazygit:
+    id: lazygit
+    ppa: "lazygit-team/release"
+  keepassxc: true
