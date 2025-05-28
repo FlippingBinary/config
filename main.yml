@@ -1,6 +1,8 @@
 ---
 - name: System management
   hosts: all
+  vars_files:
+    - secrets.yml
 
   tasks:
     - name: "Load {{ ansible_os_family }} defaults"

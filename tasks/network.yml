@@ -8,6 +8,14 @@
         name: "{{ custom_hostname }}"
       register: hostname_result
 
+    - name: Set DNS Suffix Search List
+      when: dns_search_suffix is string
+      ansible.windows.win_regedit:
+        path: HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
+        name: SearchList
+        data: "{{ dns_search_suffix }}"
+        type: string
+
     - name: Activate network changes with reboot
       ansible.windows.win_reboot:
       when: hostname_result.reboot_required
