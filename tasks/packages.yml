@@ -121,7 +121,7 @@
           }
 
     - name: Print diagnostics
-      ansible.builtin.echo: "{{ package_update_result }}"
+      ansible.builtin.debug: "{{ package_update_result }}"
       when: diagnostics
 
     - name: Update Visual Studio modules
