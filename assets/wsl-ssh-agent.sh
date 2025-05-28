@@ -13,8 +13,8 @@ fi
 
 export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
 
-# Exit if socket already exists and is a socket
-if [ -S "$SSH_AUTH_SOCK" ]; then
+# Exit if socket already exists and is a valid socket
+if ss -a | grep -q "$SSH_AUTH_SOCK"; then
   return
 fi
 
