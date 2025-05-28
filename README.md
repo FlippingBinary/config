@@ -1,12 +1,49 @@
-# Jon's DSC Collection
+# Jon's Configuration Collection
 
-This repository holds some DSC files for a development environment.
-It is always a work in progress and is being shared for convenience and so
-other people can see how I'm using DSC.
+This repository holds some configuration files for a development environment and
+home lab. It is always a work in progress and is being shared for my own convenience
+and also to get feedback from others. If it helps someone else, I'd love to hear
+about it!
 
-## Dependencies
+> [!NOTE]
+> I'm in the middle of consolidating my development workstation DSC files with
+> an Ansible playbook previously used only for homelab configuration. The end
+> goal is an Ansible-only configuration for every system I control. The downside
+> is that I can't configure a system directly from this repository -- first it
+> has to be setup for remote access by an Ansible controller, then that controller
+> has to configure the system.
 
-DSCv3 is required, but it's easy to install with WinGet:
+## Ansible
+
+Secrets are protected by a password that is stored in a KeePassXC database. The
+`secrets.sh` script has to be made executable, then it can be used as the password
+file when using Ansible. When used correctly, KeePassXC will prompt for the database
+password, which will unlock the vault password.
+
+- Create new secrets (assuming the plaintext file `secrets.yml` already exists):
+
+```shell
+ansible-vault create secrets.yml --vault-password-file secrets.sh
+```
+
+- Edit secrets:
+
+```shell
+ansible-vault edit secrets.yml --vault-password-file secrets.sh
+```
+
+- Run playbook with secrets unlocked:
+
+```shell
+ansible-playbook --vault-password-file secrets.sh main.yml
+```
+
+## DSC
+
+### Dependencies
+
+DSCv3 is required for the files under the `dsc` folder, but it's easy to install
+with WinGet:
 
 ```ps1
 winget install --id Microsoft.DSC -e
@@ -16,7 +53,7 @@ Most of these configuration files lean on the `Microsoft.Windows/WindowsPowerShe
 resource, which uses WinRM. It is not enabled by default, but can be enabled
 by running `boostrap.ps1` from this repository as an administrator.
 
-## Applying the configuration
+### Applying the configuration
 
 The configuration files all require an elevated terminal, so open Windows
 Terminal as administrator before applying them. The notable exception is
