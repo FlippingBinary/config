@@ -236,15 +236,6 @@ resources:
         UseLatest: True
         MatchOption: Equals
         InstallMode: Silent
-    - name: Install Zig
-      type: Microsoft.WinGet.DSC/WinGetPackage
-      properties:
-        Id: zig.zig
-        Version: 0.14.0
-        Source: winget
-        UseLatest: True
-        MatchOption: Equals
-        InstallMode: Silent
 
 - name: Purge Git-bundled OpenSSH
   type: Microsoft.Windows/WindowsPowerShell
@@ -337,26 +328,32 @@ resources:
           $latestVersion = Get-ChildItem -Path $msvcBase | Sort-Object Name -Descending | Select-Object -First 1
           $msvcBinPath = Join-Path -Path $latestVersion.FullName -ChildPath "bin\HostX64\x64"
           @{
-            GetScript = $GetScript
-            TestScript = $TestScript
-            SetScript = $SetScript
             Result = $msvcBinPath
           }
         TestScript: |
           $msvcBase = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC"
           $latestVersion = Get-ChildItem -Path $msvcBase | Sort-Object Name -Descending | Select-Object -First 1
           $msvcBinPath = Join-Path -Path $latestVersion.FullName -ChildPath "bin\HostX64\x64"
+          $llvmPath = "${env:Program Files (x86)}\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\bin"
           $currentPath = [System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::Machine)
           $pathEntries = $currentPath.ToLower() -split ';'
-          return $pathEntries -contains $msvcBinPath.ToLower()
+          return $pathEntries -contains $msvcBinPath.ToLower() -and $pathEntries -contains $llvmPath.ToLower()
         SetScript: |
           $msvcBase = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC"
           $latestVersion = Get-ChildItem -Path $msvcBase | Sort-Object Name -Descending | Select-Object -First 1
           $msvcBinPath = Join-Path -Path $latestVersion.FullName -ChildPath "bin\HostX64\x64"
+          $llvmPath = "${env:Program Files (x86)}\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\bin"
           $currentPath = [System.Environment]::GetEnvironmentVariable('Path', [System.EnvironmentVariableTarget]::Machine)
           $pathEntries = $currentPath.ToLower() -split ';'
+          $newPath = $currentPath
           if (-not ($pathEntries -contains $msvcBinPath.ToLower())) {
-            [System.Environment]::SetEnvironmentVariable('Path', $currentPath + ";$msvcBinPath", [System.EnvironmentVariableTarget]::Machine)
+            $newPath = $newPath + ";$msvcBinPath"
+          }
+          if (-not ($pathEntries -contains $llvmPath.ToLower())) {
+            $newPath = $newPath + ";$llvmPath"
+          }
+          if (-not ($currentPath -eq $newPath)) {
+            [System.Environment]::SetEnvironmentVariable('Path', $newPath, [System.EnvironmentVariableTarget]::Machine)
           }
 
 - name: NerdFonts
