@@ -4,6 +4,11 @@
   vars:
     id: Git.Git
 
+- name: Install GitHub CLI (Windows)
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: GitHub.cli
+
 - name: Remove Git-bundled SSH (Windows)
   ansible.windows.win_file:
     path: "{{ item }}"

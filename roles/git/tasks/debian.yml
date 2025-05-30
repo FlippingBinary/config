@@ -5,6 +5,12 @@
     state: present
     update_cache: true
 
+- name: Install GitHub CLI
+  ansible.builtin.apt:
+    name: gh
+    state: present
+    update_cache: true
+
 - name: Ensure config directory exists
   ansible.builtin.file:
     path: "{{ git_config_dir }}"
