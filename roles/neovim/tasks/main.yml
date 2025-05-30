@@ -1,0 +1,12 @@
+---
+- name: Install Bob for NeoVim
+  community.general.cargo:
+    name: bob-nvim
+
+- name: Install Bob PATH (Debian-like)
+# NOTE: The Windows version installs the PATH, but not the Linux version apparently
+  become: true
+  when: ansible_os_family == "Debian"
+  ansible.builtin.copy:
+    src: assets/bob-path.sh
+    dest: /etc/profile.d/bob-path.sh
