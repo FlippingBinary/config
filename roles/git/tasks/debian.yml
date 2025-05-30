@@ -1,0 +1,19 @@
+---
+- name: Install Git
+  ansible.builtin.apt:
+    name: git
+    state: present
+    update_cache: true
+
+- name: Ensure config directory exists
+  ansible.builtin.file:
+    path: "{{ git_config_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Copy Git config file
+  ansible.builtin.copy:
+    src: "assets/gitconfig.txt"
+    dest: "{{ git_config_dir }}/config"
+    mode: '0644'
+

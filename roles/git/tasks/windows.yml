@@ -1,0 +1,29 @@
+---
+- name: Install Git (Windows)
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: Git.Git
+
+- name: Remove Git-bundled SSH (Windows)
+  ansible.windows.win_file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - C:\Program Files\Git\usr\bin\scp.exe
+    - C:\Program Files\Git\usr\bin\sftp.exe
+    - C:\Program Files\Git\usr\bin\ssh-add.exe
+    - C:\Program Files\Git\usr\bin\ssh-agent.exe
+    - C:\Program Files\Git\usr\bin\ssh-keygen.exe
+    - C:\Program Files\Git\usr\bin\ssh-keyscan.exe
+    - C:\Program Files\Git\usr\bin\ssh.exe
+
+- name: Ensure config directory exists
+  ansible.windows.win_file:
+    path: "{{ git_config_dir }}"
+    state: directory
+
+- name: Copy Git config file
+  ansible.windows.win_copy:
+    src: "assets/gitconfig.txt"
+    dest: "{{ git_config_dir }}\\config"
+
