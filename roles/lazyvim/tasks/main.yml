@@ -3,7 +3,7 @@
   when: ansible_system == "Windows"
   block:
     - name: "WinGet package {{ item }}"
-      include_tasks: winget.yml
+      ansible.builtin.include_tasks: winget.yml
       loop:
         - BurntSushi.ripgrep.MSVC
         - Python.Python.3.11

@@ -15,7 +15,7 @@
         }
 
     - name: Install npiperelay (Windows)
-      include_tasks: winget.yml
+      ansible.builtin.include_tasks: winget.yml
       vars:
         id: albertony.npiperelay
 

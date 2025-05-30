@@ -24,7 +24,7 @@
   when: ansible_system == "Windows"
   block:
     - name: Install Rustup
-      include_tasks: winget.yml
+      ansible.builtin.include_tasks: winget.yml
       vars:
         id: Rustlang.Rustup
 
