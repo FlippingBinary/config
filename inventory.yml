@@ -2,9 +2,6 @@ workstation:
   hosts:
     cougar:
     thinkpad:
-  vars:
-    ansible_connection: ssh
-    ansible_shell_type: powershell
 
 kube:
   hosts:
@@ -29,4 +26,11 @@ services:
     kube:
     worker:
     iot:
+
+windows:
+  hosts:
+    cougar:
+    thinkpad:
+  vars:
+    ansible_shell_type: powershell
 
