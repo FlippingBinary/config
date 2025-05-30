@@ -1,0 +1,104 @@
+---
+- name: OpenSSH Client (Windows)
+  when: ansible_system == "Windows"
+  block:
+    - name: Install OpenSSH Client (Windows)
+      ansible.windows.win_powershell: |
+        [CmdletBinding(SupportsShouldProcess)]
+        param ()
+
+        $openssh = Get-WindowsCapability -Online | Where-Object { $_.Name -like 'OpenSSH.Client*' }
+        if ($openssh.State -eq "Installed") {
+          $Ansible.changed = $false
+        } elseif ($PSCmdlet.ShouldProcess('target')) {
+          $openssh | Add-WindowsCapability -Online
+        }
+
+    - name: Install npiperelay (Windows)
+      include_tasks: winget.yml
+      vars:
+        id: albertony.npiperelay
+
+- name: OpenSSH Server (Windows)
+  when: ansible_system == "Windows"
+  block:
+    - name: Install SSHd
+      notify: Restart SSHd
+      ansible.windows.win_powershell: |
+        [CmdletBinding(SupportsShouldProcess)]
+        param ()
+
+        $openssh = Get-WindowsCapability -Online | Where-Object { $_.Name -like 'OpenSSH.Server*' }
+        if ($openssh.State -eq "Installed") {
+          $Ansible.changed = $false
+        } elseif ($PSCmdlet.ShouldProcess('target')) {
+          $openssh | Add-WindowsCapability -Online
+        }
+
+    - name: Create SSHd configuration directory
+      ansible.windows.win_file:
+        path: "{{ lookup('env', 'PROGRAMDATA') }}\\ssh\\sshd_config"
+        state: directory
+
+    - name: Configure SSHd
+      notify: Restart SSHd
+      ansible.windows.win_copy:
+        src: "assets/sshd_config"
+        dest: "{{ lookup('env', 'PROGRAMDATA') }}\\ssh\\sshd_config.d\\require_keys.conf"
+
+    - name: Include SSHd configuration
+      notify: Restart SSHd
+      ansible.windows.win_lineinfile:
+        path: "{{ lookup('env', 'PROGRAMDATA') }}\\ssh\\sshd_config"
+        line: "Include __PROGRAMDATA__/ssh/sshd_config.d/*.conf"
+
+- name: OpenSSH Client (Debian-like)
+  when: ansible_os_family == "Debian"
+  block:
+    - name: Install packages
+      become: true
+      ansible.builtin.apt:
+        name:
+          - openssh-client
+          - socat
+        state: present
+        update_cache: true
+
+    - name: Install ssh agent proxy
+      ansible.builtin.copy:
+        src: assets/wsl-ssh-agent.sh
+        dest: /etc/profile.d/wsl-ssh-agent.sh
+
+- name: OpenSSH Server (Debian-like)
+  when: ansible_os_family == "Debian"
+  vars:
+    ssh_config_dir: "{{ ansible_user_dir }}/.ssh"
+  block:
+    - name: Install SSHd
+      become: true
+      ansible.builtin.apt:
+        name:
+          - openssh-server
+        state: present
+        update_cache: true
+
+    - name: Ensure user's SSH folder exists
+      ansible.builtin.file:
+        path: "{{ ssh_config_dir }}"
+        state: directory
+        mode: '0700'
+
+    - name: Configure authorized keys
+      loop: "{{ authorized_keys }}"
+      ansible.builtin.lineinfile:
+        path: "{{ ssh_config_dir }}/authorized_keys"
+        line: "{{ item }}"
+
+    - name: Configure OpenSSH Server
+      become: true
+      ansible.builtin.copy:
+        src: "assets/sshd_config"
+        dest: "/etc/ssh/sshd_config.d/require_keys.conf"
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
