@@ -1,79 +1,13 @@
 ---
-- name: Install LazyGit (Debian >= 13 | Ubuntu >= 25.10)
-  become: true
-  ansible.builtin.apt:
-    name: lazygit
-    state: present
-    update_cache: true
-  when: >
-    (ansible_distribution == "Debian" and ansible_distribution_major_version | int >= 13) or
-    (ansible_distribution == "Ubuntu" and ansible_distribution_version is version('25.10', '>='))
-
-- name: Install LazyGit (Debian < 13 | Ubuntu < 25.10)
-  when: >
-    (ansible_distribution == "Debian" and ansible_distribution_major_version | int < 13) or
-    (ansible_distribution == "Ubuntu" and ansible_distribution_version is version('25.10', '<'))
-  block:
-    - name: Get latest lazygit version from GitHub
-      ansible.builtin.uri:
-        url: https://api.github.com/repos/jesseduffield/lazygit/releases/latest
-        return_content: yes
-      register: lazygit_release
-
-    - name: Set lazygit version fact
-      ansible.builtin.set_fact:
-        lazygit_version: "{{ lazygit_release.json.tag_name | regex_replace('^v', '') }}"
-      when: lazygit_release is defined
-
-    - name: Install lazygit from GitHub release (older Debian/Ubuntu)
-      ansible.builtin.unarchive:
-        src: "https://github.com/jesseduffield/lazygit/releases/download/v{{ lazygit_version }}/lazygit_{{ lazygit_version }}_Linux_x86_64.tar.gz"
-        dest: /usr/local/bin
-        remote_src: yes
-        creates: /usr/local/bin/lazygit
-      vars:
-        lazygit_version: "{{ lazygit_release.json.tag_name | regex_replace('^v', '') }}"
-      register: lazygit_download
-      when: lazygit_release is defined
-
-    - name: Ensure lazygit binary is executable
-      ansible.builtin.file:
-        path: /usr/local/bin/lazygit
-        mode: '0755'
-        state: file
-      when: lazygit_download is changed
-
-- name: Configure LazyGit (Linux)
-  when: ansible_system == "Linux"
+- name: Manage LazyGit (Debian-like)
+  when: ansible_os_family == "Debian"
+  ansible.builtin.include_tasks: debian.yml
   vars:
-    lazygit_config_dir: "{{ ansible_user_dir }}/.config/lazygit"
-  block:
-    - name: Ensure config directory exists
-      when: ansible_system == "Linux"
-      ansible.builtin.file:
-        path: "{{ lazygit_config_dir }}"
-        state: directory
-        mode: '0755'
+    lazygit_config_dir: "{{ ansible_user_dir }}/.config/git"
 
-    - name: Copy lazygit config file
-      when: ansible_system == "Linux"
-      ansible.builtin.copy:
-        src: "assets/lazygit.yml"
-        dest: "{{ lazygit_config_dir }}/config.yml"
-        mode: '0644'
-
-- name: Configure LazyGit (Windows)
+- name: Manage LazyGit (Windows)
   when: ansible_system == "Windows"
-  block:
-    - name: Ensure config directory exists
-      when: ansible_system == "Windows"
-      ansible.windows.win_file:
-        path: "{{ lookup('env', 'LOCALAPPDATA') }}\\lazygit"
-        state: directory
-
-    - name: Copy lazygit config file
-      when: ansible_system == "Windows"
-      ansible.windows.win_copy:
-        src: "assets/lazygit.yml"
-        dest: "{{ lookup('env', 'LOCALAPPDATA') }}\\lazygit\\config.yml"
+  ansible.builtin.include_tasks: windows.yml
+  vars:
+    lazygit_config_dir: "{{ lookup('env', 'LOCALAPPDATA') }}\\lazygit"
 
