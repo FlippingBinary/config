@@ -1,3 +1,10 @@
+development:
+  hosts:
+    cougar_wsl:
+    thinkpad_wsl:
+  children:
+    workstation:
+
 workstation:
   hosts:
     cougar:
