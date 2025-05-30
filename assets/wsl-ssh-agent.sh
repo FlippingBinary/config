@@ -13,7 +13,7 @@ fi
 
 export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
 
-# Exit if socket already exists and is a valid socket
+# Exit if valid socket already exists
 if ss -a | grep -q "$SSH_AUTH_SOCK"; then
   return
 fi
@@ -49,5 +49,7 @@ fi
 
 # Start socat bridge to Windows OpenSSH agent
 # Source: https://dev.to/andrewdoesinfra/using-windows-ssh-agent-in-wsl2-a-complete-guide-50oi
-(socat UNIX-LISTEN:"$SSH_AUTH_SOCK",fork EXEC:"npiperelay.exe -ei -s //./pipe/openssh-ssh-agent",nofork &) >/dev/null 2>&1
+socat UNIX-LISTEN:"$SSH_AUTH_SOCK",fork \
+  EXEC:"npiperelay.exe -ei -s //./pipe/openssh-ssh-agent",nofork \
+  >/dev/null 2>&1 &
 
