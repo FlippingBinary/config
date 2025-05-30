@@ -2,20 +2,20 @@
 - name: Update or install a package via winget
   ansible.windows.win_powershell:
     parameters:
-      AppId: "{{ app_id }}"
+      Id: "{{ id }}"
       Version: "{{ version | default(omit) }}"
       Ensure: "{{ ensure | default('present') }}"
     script: |
       [CmdletBinding(SupportsShouldProcess)]
       param (
-        [String] $AppId,
+        [String] $Id,
         [String] $Version = $null,
         [String] $Ensure = 'present'
       )
 
       $Ansible.Changed = $false
-      $before_version = ((winget list --id $AppId --source winget --exact | Select-String -Pattern $AppId) -split '\s{2,}')[2]
-      $before_pin = ((winget pin list --id $AppId --source winget --exact | Select-String -Pattern $AppId) -split '\s{2,}')[5]
+      $before_version = ((winget list --id $Id --source winget --exact | Select-String -Pattern $Id) -split '\s{2,}')[2]
+      $before_pin = ((winget pin list --id $Id --source winget --exact | Select-String -Pattern $Id) -split '\s{2,}')[5]
 
       $Ansible.Result = [PSCustomObject]@{
         before_version = $before_version
@@ -28,7 +28,7 @@
       if ($Version) {
         if ($Version -ne $before_pin) {
           if ($PSCmdlet.ShouldProcess('target')) {
-            winget pin add --source winget --id $AppId --exact --version $Version --force
+            winget pin add --source winget --id $Id --exact --version $Version --force
           }
           $Ansible.Changed = $true
           $Ansible.Result.pin = $Version
@@ -37,7 +37,7 @@
         }
       } elseif ($before_pin) {
         if ($PSCmdlet.ShouldProcess('target')) {
-          winget pin remove --source winget --id $AppId --exact
+          winget pin remove --source winget --id $Id --exact
         }
         $Ansible.Changed = $true
       }
@@ -45,7 +45,7 @@
       if ($Ensure -eq 'absent') {
         if ($before_version) {
           if ($PSCmdlet.ShouldProcess('target')) {
-            winget uninstall --id $AppId --exact --silent
+            winget uninstall --id $Id --exact --silent
           }
           $Ansible.Changed = $true
         }
@@ -59,7 +59,7 @@
             "--accept-source-agreements",
             "--silent",
             "--source", "winget",
-            "--id", $AppId,
+            "--id", $Id,
             "--exact"
           ) -Wait -PassThru
 
