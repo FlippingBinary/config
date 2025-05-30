@@ -13,7 +13,6 @@
     state: absent
 
 - name: Install required system packages
-  tags: [create, update, rebuild]
   become: true
   ansible.builtin.apt:
     name:
@@ -27,7 +26,6 @@
     update_cache: true
 
 - name: Get Docker GPG key
-  tags: [create, update, rebuild]
   become: true
   ansible.builtin.get_url:
     url: https://download.docker.com/linux/debian/gpg
@@ -48,7 +46,6 @@
       ppc: powerpc
 
 - name: Add Docker repository
-  tags: [create, update, rebuild]
   become: true
   ansible.builtin.apt_repository:
     repo: >
@@ -60,7 +57,6 @@
     state: present
 
 - name: Install Docker packages
-  tags: [create, update, rebuild]
   become: true
   ansible.builtin.apt:
     name:
@@ -73,7 +69,6 @@
     state: present
 
 - name: Add Ansible user to docker group
-  tags: [create, update, rebuild]
   become: true
   ansible.builtin.user:
     name: "{{ ansible_user }}"
@@ -85,4 +80,3 @@
 
 - name: Flush handlers
   ansible.builtin.meta: flush_handlers
-  tags: [create, update, rebuild]
