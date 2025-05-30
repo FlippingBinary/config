@@ -1,0 +1,63 @@
+---
+- name: Install Git (Debian-like)
+  when: ansible_os_family == "Debian"
+  ansible.builtin.apt:
+    name: git
+    state: present
+    update_cache: true
+
+- name: Install Git (Windows)
+  when: ansible_system == "Windows"
+  include_tasks: winget.yml
+  vars:
+    id: Git.Git
+
+- name: Remove Git-bundled SSH (Windows)
+  when: ansible_system == "Windows"
+  ansible.windows.win_file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - C:\Program Files\Git\usr\bin\scp.exe
+    - C:\Program Files\Git\usr\bin\sftp.exe
+    - C:\Program Files\Git\usr\bin\ssh-add.exe
+    - C:\Program Files\Git\usr\bin\ssh-agent.exe
+    - C:\Program Files\Git\usr\bin\ssh-keygen.exe
+    - C:\Program Files\Git\usr\bin\ssh-keyscan.exe
+    - C:\Program Files\Git\usr\bin\ssh.exe
+
+- name: Configure Git
+  when: ansible_system == "Linux"
+  vars:
+    git_config_dir: "{{ ansible_user_dir }}/.config/git"
+  block:
+    - name: Ensure config directory exists
+      when: ansible_system == "Linux"
+      ansible.builtin.file:
+        path: "{{ git_config_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Copy Git config file
+      when: ansible_system == "Linux"
+      ansible.builtin.copy:
+        src: "assets/gitconfig.txt"
+        dest: "{{ git_config_dir }}/config"
+        mode: '0644'
+
+- name: Configure Git (Windows)
+  when: ansible_system == "Windows"
+  block:
+    - name: Ensure config directory exists
+      when: ansible_system == "Windows"
+      ansible.windows.win_file:
+        # Valid since 2.46.0: https://github.com/git-for-windows/git/discussions/5097
+        path: "{{ lookup('env', 'LOCALAPPDATA') }}\\Git"
+        state: directory
+
+    - name: Copy Git config file
+      when: ansible_system == "Windows"
+      ansible.windows.win_copy:
+        src: "assets/gitconfig.txt"
+        dest: "{{ lookup('env', 'LOCALAPPDATA') }}\\Git\\config"
+
