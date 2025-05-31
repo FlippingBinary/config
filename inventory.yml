@@ -5,28 +5,16 @@ development:
   children:
     workstation:
 
-workstation:
-  hosts:
-    cougar:
-    thinkpad:
-
-kube:
-  hosts:
-    kube1:
-    kube2:
-
-worker:
-  hosts:
-    worker1:
-    worker2:
-    worker3:
-    worker4:
-
 iot:
   hosts:
     baier:
     kentucky:
     york:
+
+kube:
+  hosts:
+    kube1:
+    kube2:
 
 services:
   children:
@@ -40,4 +28,16 @@ windows:
     thinkpad:
   vars:
     ansible_shell_type: powershell
+
+worker:
+  hosts:
+    worker1:
+    worker2:
+    worker3:
+    worker4:
+
+workstation:
+  hosts:
+    cougar:
+    thinkpad:
 
