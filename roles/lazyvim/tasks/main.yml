@@ -1,58 +1,13 @@
 ---
-- name: Install LazyVim dependencies (Windows)
-  when: ansible_system == "Windows"
-  block:
-    - name: "WinGet package {{ item }}"
-      ansible.builtin.include_tasks: winget.yml
-      loop:
-        - BurntSushi.ripgrep.MSVC
-        - Python.Python.3.11
-        - equalsraf.win32yank
-        - junegunn.fzf
-        - rjpcomputing.luaforwindows
-      vars:
-        id: "{{ item }}"
-
-- name: Install LazyVim dependencies (Debian-like)
+- name: Manage LazyVim (Debian-like)
   when: ansible_os_family == "Debian"
-  ansible.builtin.apt:
-    name:
-      - ripgrep
-      - fzf
-    state: present
-    update_cache: true
+  become: true
+  ansible.builtin.include_tasks: debian.yml
+
+- name: Manage LazyVim (Windows)
+  when: ansible_system == "Windows"
+  ansible.builtin.include_tasks: windows.yml
 
 - name: Install fd-find with Cargo
   community.general.cargo:
     name: fd-find
-
-- name: Clone LazyVim configuration (Linux)
-  when: ansible_system == "Linux"
-  ansible.builtin.git:
-    repo: https://github.com/FlippingBinary/nvim-config.git
-    dest: "{{ ansible_user_dir + '/.config/nvim' }}"
-    clone: true
-    force: true
-
-- name: Clone LazyVim configuration (Windows)
-  when: ansible_system == "Windows"
-  ansible.windows.win_powershell:
-    parameters:
-      Repository: https://github.com/FlippingBinary/nvim-config.git
-      Destination: "{{ lookup('env', 'LOCALAPPDATA') }}/nvim"
-    script: |
-      [CmdletBinding(SupportsShouldProcess)]
-      param (
-        [String]
-        $Repository,
-
-        [String]
-        $Destination
-      )
-
-      # Check if the folder exists
-      if ((Get-Item $Destination).PSIsContainer -eq $true) {
-        $Ansible.changed = $false
-      } elseif ($PSCmdlet.ShouldProcess('target')) {
-        git clone $Repository $Destination
-      }

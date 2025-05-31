@@ -1,0 +1,30 @@
+---
+- name: Install Hyper-V and containers
+  ansible.windows.win_optional_feature:
+    name:
+      - containers
+      - Microsoft-Hyper-V
+    state: present
+
+- name: Install Docker CLI
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: Docker.DockerCLI
+
+- name: Manage docker service
+  ansible.windows.win_powershell:
+    script: |
+      [CmdletBinding(SupportsShouldProcess)]
+      param ()
+
+      if ( -not Get-Service -Name docker -ErrorAction SilentlyContinue ) {
+        $Ansible.changed = false
+      } elseif ($PSCmdlet.ShouldProcess('target')) {
+        dockerd --register-service
+      }
+
+- name: Enable docker service
+  ansible.builtin.win_service:
+    name: docker
+    state: started
+    enabled: true

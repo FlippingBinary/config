@@ -1,0 +1,22 @@
+---
+- name: Clone LazyVim configuration
+  ansible.windows.win_powershell:
+    parameters:
+      Repository: https://github.com/FlippingBinary/nvim-config.git
+      Destination: "{{ lookup('env', 'LOCALAPPDATA') }}/nvim"
+    script: |
+      [CmdletBinding(SupportsShouldProcess)]
+      param (
+        [String]
+        $Repository,
+
+        [String]
+        $Destination
+      )
+
+      # Check if the folder exists
+      if ((Get-Item $Destination).PSIsContainer -eq $true) {
+        $Ansible.changed = $false
+      } elseif ($PSCmdlet.ShouldProcess('target')) {
+        git clone $Repository $Destination
+      }

@@ -1,0 +1,42 @@
+---
+- name: Install 0xProto NerdFont (Windows)
+  ansible.windows.win_powershell:
+    parameters:
+      FontName: 0xProto
+      Present: true
+    script: |
+      [CmdletBinding(SupportsShouldProcess)]
+      param (
+        [String]
+        $FontName,
+
+        [Switch]
+        $Present
+      )
+
+      # Check if the font is installed
+      Add-Type -AssemblyName System.Drawing
+      $fonts = (New-Object System.Drawing.Text.InstalledFontCollection).Families
+      $fontExists = $fonts | Where-Object { $_.Name -eq $fontName }
+
+      if (-not $fontExists -and $Present) {
+        try {
+          $null = Get-InstalledModule -Name NerdFonts -ErrorAction Stop
+        } catch {
+          if ($PSCmdlet.ShouldProcess('target')) {
+            Install-Module -Name NerdFonts -Repository PSGallery -Force -Scope AllUsers
+          }
+        }
+
+        if ($PSCmdlet.ShouldProcess('target')) {
+          Import-Module NerdFonts
+          $baseFontName = $FontName -replace '\s+Nerd\s+Font$', ''
+          Install-NerdFont -Name $baseFontName -Scope AllUsers
+        }
+      } elseif ($fontExists -and -not $Present) {
+        if ($PSCmdlet.ShouldProcess('target')) {
+          Uninstall-Font -Name $FontName
+        }
+      } else {
+        $Ansible.Changed = $false
+      }

@@ -1,0 +1,47 @@
+---
+- name: Install SSH packages
+  become: true
+  ansible.builtin.apt:
+    name:
+      - openssh-client
+      - socat
+    state: present
+    update_cache: true
+
+- name: Install ssh agent proxy
+  ansible.builtin.copy:
+    src: assets/wsl-ssh-agent.sh
+    dest: /etc/profile.d/wsl-ssh-agent.sh
+
+- name: Install SSHd
+  become: true
+  ansible.builtin.apt:
+    name:
+      - openssh-server
+    state: present
+    update_cache: true
+
+- name: Configure SSHd
+  become: true
+  ansible.builtin.copy:
+    src: "assets/sshd_config"
+    dest: "/etc/ssh/sshd_config.d/require_keys.conf"
+
+- name: Enable SSHd
+  become: true
+  ansible.builtin.service:
+    name: sshd
+    enabled: true
+    state: started
+
+- name: Ensure user's SSH folder exists
+  ansible.builtin.file:
+    path: "{{ ssh_config_dir }}"
+    state: directory
+    mode: '0700'
+
+- name: Configure authorized keys
+  loop: "{{ authorized_keys }}"
+  ansible.builtin.lineinfile:
+    path: "{{ ssh_config_dir }}/authorized_keys"
+    line: "{{ item }}"

@@ -1,0 +1,46 @@
+---
+- name: Install OpenSSH Client (Windows)
+  ansible.windows.win_powershell: |
+    [CmdletBinding(SupportsShouldProcess)]
+    param ()
+
+    $openssh = Get-WindowsCapability -Online | Where-Object { $_.Name -like 'OpenSSH.Client*' }
+    if ($openssh.State -eq "Installed") {
+      $Ansible.changed = $false
+    } elseif ($PSCmdlet.ShouldProcess('target')) {
+      $openssh | Add-WindowsCapability -Online
+    }
+
+- name: Install npiperelay (Windows)
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: albertony.npiperelay
+
+- name: Install SSHd
+  ansible.windows.win_powershell: |
+    [CmdletBinding(SupportsShouldProcess)]
+    param ()
+
+    $openssh = Get-WindowsCapability -Online | Where-Object { $_.Name -like 'OpenSSH.Server*' }
+    if ($openssh.State -eq "Installed") {
+      $Ansible.changed = $false
+    } elseif ($PSCmdlet.ShouldProcess('target')) {
+      $openssh | Add-WindowsCapability -Online
+    }
+
+- name: Create SSHd configuration directory
+  ansible.windows.win_file:
+    path: "{{ sshd_config_dir }}\\sshd_config"
+    state: directory
+
+- name: Configure SSHd
+  notify: Restart SSHd
+  ansible.windows.win_copy:
+    src: "assets/sshd_config"
+    dest: "{{ sshd_config_dir }}\\sshd_config.d\\require_keys.conf"
+
+- name: Include SSHd configuration
+  notify: Restart SSHd
+  ansible.windows.win_lineinfile:
+    path: "{{ sshd_config_dir }}\\sshd_config"
+    line: "Include __PROGRAMDATA__/ssh/sshd_config.d/*.conf"

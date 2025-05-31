@@ -1,0 +1,21 @@
+---
+- name: Ensure font directory exists
+  ansible.builtin.file:
+    path: /usr/share/fonts/truetype/nerdfont
+    state: directory
+
+- name: Install 0xProto
+  ansible.builtin.unarchive:
+    src: https://github.com/ryanoasis/nerd-fonts/releases/latest/download/0xProto.tar.xz
+    include:
+      - 0xProtoNerdFontMono-Italic.ttf
+      - 0xProtoNerdFont-Bold.ttf
+      - 0xProtoNerdFontMono-Regular.ttf
+      - 0xProtoNerdFont-Italic.ttf
+      - 0xProtoNerdFontPropo-Bold.ttf
+      - 0xProtoNerdFont-Regular.ttf
+      - 0xProtoNerdFontPropo-Italic.ttf
+      - 0xProtoNerdFontMono-Bold.ttf
+      - 0xProtoNerdFontPropo-Regular.ttf
+    dest: "/usr/share/fonts/truetype/nerdfont/"
+    remote_src: yes

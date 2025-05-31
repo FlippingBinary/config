@@ -1,0 +1,42 @@
+---
+- name: Install Rustup
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: Rustlang.Rustup
+
+- name: Update Visual Studio modules
+  ansible.windows.win_dsc:
+    resource_name: Microsoft.VisualStudio.DSC/VSComponents
+    ProductId: Microsoft.VisualStudio.Product.BuildTools
+    ChannelId: VisualStudio.17.Release
+    Components:
+      - Microsoft.VisualStudio.Workload.VCTools
+      - Microsoft.VisualStudio.Component.VC.Tools.x86.x64
+      - Microsoft.VisualStudio.Component.Windows11SDK.22621
+
+- name: Find Visual Studio tools 
+  register: vs_tools_results
+  ansible.windows.win_powershell:
+    script: |
+      [CmdletBinding(SupportsShouldProcess)]
+      param ()
+
+      $msvcBase = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC"
+      $latestVersion = Get-ChildItem -Path $msvcBase | Sort-Object Name -Descending | Select-Object -First 1
+      $msvcBinPath = Join-Path -Path $latestVersion.FullName -ChildPath "bin\HostX64\x64"
+      $llvmBinPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\bin"
+
+      $Ansible.Changed = $false
+      $Ansible.Result = [PSCustomObject]@{
+        msvc_path = $msvcBinPath
+        llvm_path = $llvmBinPath
+      }
+
+- name: Put Visual Studio tools in PATH
+  ansible.windows.win_path:
+    elements:
+      - vs_tools_results.result.msvc_path
+      - vs_tools_results.result.llvm_path
+
+- name: Set default Rust version
+  ansible.windows.win_command: rustup default stable

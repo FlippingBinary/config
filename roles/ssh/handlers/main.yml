@@ -1,13 +1,9 @@
 ---
 - name: Restart SSHd
-  block:
-    - name: Restart SSHd (Windows)
-      when: ansible_system == "Windows"
-      ansible.builtin.win_service:
-        name: sshd
-        state: restarted
-    - name: Restart SSHd (Debian-like)
-      when: ansible_os_family == "Debian"
-      ansible.builtin.service:
-        name: sshd
-        state: restarted
+  ansible.builtin.win_service:
+    name: sshd
+    state: restarted
+- name: Reload SSHd
+  ansible.builtin.service:
+    name: sshd
+    state: reloaded
