@@ -1,3 +1,7 @@
+all:
+  hosts:
+    proxmox:
+
 development:
   hosts:
     cougar_wsl:

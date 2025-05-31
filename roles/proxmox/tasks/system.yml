@@ -1,0 +1,17 @@
+---
+- name: Install GuestFS Tools and Python modules
+  ansible.builtin.apt:
+    pkg:
+      - libguestfs-tools
+      - python3-proxmoxer
+      - python3-requests
+    state: present
+    update_cache: true
+
+- name: Disable subscription nag
+  ansible.builtin.lineinfile:
+    path: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+    insertbefore: 'if \(res === null \|\| res === undefined \|\| !res \|\| res'
+    line: '                    orig_cmd(); return; // Inserted by Ansible'
+    regexp: 'orig_cmd\(\); return;'
+

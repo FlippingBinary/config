@@ -20,3 +20,11 @@
   roles:
     - docker
     - lazyvim
+
+- name: Proxmox Host
+  hosts: proxmox
+  vars_files:
+    - secrets.yml
+  roles:
+    - proxmox
+

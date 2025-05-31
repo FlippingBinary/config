@@ -1,0 +1,13 @@
+---
+- name: Setup system environment
+  include_tasks: system.yml
+
+- name: Manage VM template
+  include_tasks: template.yml
+  vars:
+    # This pulls the latest image, but it could also be set to a specific release. I prefer latest
+    # right now because I'm not sure what the odds of an older release being pulled back.
+    image_url: "{{ image_url | default('https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2') }}"
+    image_name: "{{ image_name | default(image_url | urlsplit('path') | basename) }}"
+    # See: https://bugzilla.proxmox.com/show_bug.cgi?id=4141
+    image_path: "/var/lib/vz/images/0/{{ image_name | default(image_url | urlsplit('path') | basename) }}"

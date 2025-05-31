@@ -1,0 +1,109 @@
+---
+- name: Create directory for cloud init image
+  file:
+    path: "{{ image_path | dirname }}"
+    state: directory
+
+- name: Download cloud init image
+  get_url:
+    url: "{{ image_url }}"
+    dest: "{{ image_path }}"
+    force: no
+  register: download_image
+  until: download_image is succeeded
+  retries: 3
+  delay: 5
+
+- name: Update the image
+  command: >
+    virt-customize -a "{{ image_path }}"
+    --update
+    --install qemu-guest-agent,nfs-common
+    --run-command 'useradd --shell /bin/bash ansible; mkdir -p /home/ansible/.ssh; chown -R ansible:ansible /home/ansible'
+    --ssh-inject ansible:file:/root/.ssh/goobygob_public_keys
+    --run-command 'echo "ansible ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/ansible; chmod 0440 /etc/sudoers.d/ansible; chown root:root /etc/sudoers.d/ansible'
+    --run-command '>/etc/machine-id'
+  when: download_image is changed
+  register: image_customization
+
+- name: Create a new VM
+  community.general.proxmox_kvm:
+    api_host: "{{ inventory_hostname }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    node: "{{ proxmox_node }}"
+    vmid: "{{ template_vmid }}"
+    name: "{{ template_name }}"
+    ciuser: "jon"
+    sshkeys: "{{ lookup('file', role_path + '/files/authorized_keys') }}"
+    scsihw: virtio-scsi-single
+    ide:
+      ide0: 'local:cloudinit,format=qcow2'
+      ide2: 'none,media=cdrom'
+    searchdomains: 'goobygob.com'
+    memory: 4096
+    cores: 4
+    net:
+      net0: 'virtio,bridge=vmbr0'
+    ipconfig:
+      ipconfig0: 'ip=dhcp'
+    ostype: l26
+    boot: order=ide2;scsi0;net0
+  register: create_vm
+
+- name: Import downloaded image to the VM
+  community.general.proxmox_disk:
+    api_host: "{{ inventory_hostname }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    vmid: "{{ template_vmid }}"
+    storage: local-lvm
+    # A bug influenced the functionality of this parameter:
+    # https://bugzilla.proxmox.com/show_bug.cgi?id=4141
+    import_from: "local:0/{{ image_name }}"
+    disk: scsi0
+    format: raw
+    iothread: true
+    discard: "on"
+  when: create_vm is changed
+
+- name: Move VM disk to LVM
+  community.general.proxmox_disk:
+    api_host: "{{ inventory_hostname }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    vmid: "{{ template_vmid }}"
+    storage: local
+    target_storage: "local-lvm"
+    disk: ide0
+    state: moved
+  when: create_vm is changed
+
+- name: Resize VM disk
+  community.general.proxmox_disk:
+    api_host: "{{ inventory_hostname }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    vmid: "{{ template_vmid }}"
+    storage: "local-lvm"
+    size: 20G
+    disk: scsi0
+    state: resized
+  when: create_vm is changed
+
+- name: Convert VM to a template
+  community.general.proxmox_kvm:
+    api_host: "{{ inventory_hostname }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    node: "{{ proxmox_node }}"
+    vmid: "{{ template_vmid }}"
+    name: "{{ template_name }}"
+    state: "template"
+  when: create_vm is changed
+
