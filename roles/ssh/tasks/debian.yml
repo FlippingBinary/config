@@ -21,10 +21,10 @@
     state: present
     update_cache: true
 
-- name: Configure SSHd
+- name: Configure SSHd to require keys
   become: true
   ansible.builtin.copy:
-    src: "assets/sshd_config"
+    src: "assets/sshd_config.require_keys"
     dest: "/etc/ssh/sshd_config.d/require_keys.conf"
 
 - name: Enable SSHd
