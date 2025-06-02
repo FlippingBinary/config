@@ -1,5 +1,6 @@
 ---
 - name: Install LazyVim dependencies
+  become: true
   ansible.builtin.apt:
     name:
       - ripgrep

@@ -1,5 +1,6 @@
 ---
 - name: Remove conflicting packages
+  become: true
   ansible.builtin.apt:
     name:
       - docker.io
@@ -12,6 +13,7 @@
     state: absent
 
 - name: Install required system packages
+  become: true
   ansible.builtin.apt:
     name:
       - apt-transport-https
@@ -24,12 +26,14 @@
     update_cache: true
 
 - name: Get Docker GPG key
+  become: true
   ansible.builtin.get_url:
     url: https://download.docker.com/linux/debian/gpg
     dest: /etc/apt/keyrings/docker.asc
     mode: u+rw,g+r,o+r
 
 - name: Add Docker repository
+  become: true
   ansible.builtin.apt_repository:
     repo: >
       deb
@@ -50,6 +54,7 @@
       ppc: powerpc
 
 - name: Install Docker packages
+  become: true
   ansible.builtin.apt:
     name:
       - docker-ce
@@ -61,6 +66,7 @@
     state: present
 
 - name: Add Ansible user to docker group
+  become: true
   ansible.builtin.user:
     name: "{{ ansible_user }}"
     groups: docker
@@ -69,6 +75,7 @@
     - Reconnect to finalize group membership
 
 - name: Manage docker service
+  become: true
   ansible.builtin.service:
     name:
       - docker

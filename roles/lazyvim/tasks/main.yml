@@ -1,7 +1,6 @@
 ---
 - name: Manage LazyVim (Debian-like)
   when: ansible_os_family == "Debian"
-  become: true
   ansible.builtin.include_tasks: debian.yml
 
 - name: Manage LazyVim (Windows)
