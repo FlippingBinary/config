@@ -13,6 +13,13 @@
   roles:
     - desktop
 
+- name: Containerization platform
+  hosts: kube:worker
+  vars_files:
+    - secrets.yml
+  roles:
+    - platform
+
 - name: Development Environment
   hosts: development
   vars_files:

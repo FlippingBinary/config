@@ -20,12 +20,6 @@ kube:
     kube1:
     kube2:
 
-services:
-  children:
-    kube:
-    worker:
-    iot:
-
 windows:
   hosts:
     cougar:
