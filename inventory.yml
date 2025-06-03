@@ -4,8 +4,8 @@ all:
 
 development:
   hosts:
-    cougar_wsl:
-    thinkpad_wsl:
+    wsl.cougar:
+    wsl.thinkpad:
   children:
     workstation:
 
