@@ -39,3 +39,10 @@ workstation:
     cougar:
     thinkpad:
 
+wsl:
+  hosts:
+    wsl.cougar:
+    wsl.thinkpad:
+  vars:
+    ansible_port: 2222
+
