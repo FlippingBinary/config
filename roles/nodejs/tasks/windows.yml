@@ -1,0 +1,5 @@
+---
+- name: Install NVM
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: CoreyButler.NVMforWindows
