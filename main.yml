@@ -11,10 +11,13 @@
   vars_files:
     - secrets.yml
   roles:
-    - desktop
+    - comms
+    - nerdfont
+    - trusted
+    - virtualization
 
 - name: Virtualization
-  hosts: kube:worker:workstation
+  hosts: kube:worker
   vars_files:
     - secrets.yml
   roles:
@@ -25,7 +28,7 @@
   vars_files:
     - secrets.yml
   roles:
-    - docker
+    - virtualization
     - lazyvim
 
 - name: Proxmox Host
