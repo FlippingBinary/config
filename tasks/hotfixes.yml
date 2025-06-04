@@ -1,9 +1,0 @@
----
-- name: Hotfixes on Windows
-  when: ansible_system == "Windows"
-  block:
-    - name: Remove unwanted files
-      loop: "{{ remove_files }}"
-      ansible.windows.win_file:
-        path: "{{ item }}"
-        state: absent
