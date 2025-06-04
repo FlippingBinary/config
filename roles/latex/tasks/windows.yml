@@ -1,0 +1,16 @@
+---
+- name: Install LaTeX (Windows)
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: MiKTeX.MiKTeX
+
+- name: Install Strawberry Perl (Windows)
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: StrawberryPerl.StrawberryPerl
+
+- name: Install Sumatra PDF (Windows)
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: SumatraPDF.SumatraPDF
+
