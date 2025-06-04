@@ -1,0 +1,5 @@
+---
+- name: Install OBS Studio
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: OBSProject.OBSStudio
