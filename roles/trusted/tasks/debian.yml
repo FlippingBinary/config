@@ -1,0 +1,13 @@
+---
+- name: Install KeePassXC (Debian-like)
+  become: true
+  ansible.builtin.apt:
+    name:
+      - keepassxc
+    state: present
+    update_cache: true
+
+- name: Install Synology Drive (Debian-like)
+  become: true
+  ansible.builtin.apt:
+    deb: https://global.synologydownload.com/download/Utility/SynologyDriveClient/3.5.2-16111/Ubuntu/Installer/synology-drive-client-16111.x86_64.deb

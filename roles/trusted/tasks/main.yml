@@ -1,0 +1,8 @@
+---
+- name: Manage trusted components (Debian-like)
+  when: ansible_os_family == "Debian"
+  ansible.builtin.include_tasks: debian.yml
+
+- name: Manage trusted components (Windows)
+  when: ansible_system == "Windows"
+  ansible.builtin.include_tasks: windows.yml
