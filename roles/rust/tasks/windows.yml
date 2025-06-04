@@ -3,6 +3,11 @@
   ansible.builtin.include_tasks: winget.yml
   vars:
     id: Rustlang.Rustup
+  # Microsoft.VCLibs.Desktop.14
+  # Microsoft.VCRedist.2005.x86
+  # Microsoft.VCRedist.2015+.x64
+  # Microsoft.VCRedist.2015+.x86
+  # Microsoft.VisualStudio.2022.BuildTools
 
 - name: Update Visual Studio modules
   ansible.windows.win_dsc:
@@ -40,3 +45,8 @@
 
 - name: Set default Rust version
   ansible.windows.win_command: rustup default stable
+
+- name: Remove Zig compiler
+  ansible.windows.win_package:
+    product_id: zig.zig
+    state: absent
