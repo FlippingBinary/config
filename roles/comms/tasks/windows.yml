@@ -1,0 +1,15 @@
+---
+- name: Install Thunderbird ESR (Windows)
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: Mozilla.Thunderbird.ESR
+
+- name: Install Discord (Windows)
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: Discord.Discord
+
+- name: Install Signal (Windows)
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: OpenWhisperSystems.Signal

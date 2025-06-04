@@ -1,0 +1,26 @@
+---
+- name: Remove Thunderbird Snap
+  community.general.snap:
+    name: thunderbird
+    state: absent
+
+- name: Add Mozilla PPA
+  ansible.builtin.apt_repository:
+    repo: ppa:mozillateam/ppa
+
+- name: Override Snap preference
+  ansible.builtin.copy:
+    dest: /etc/apt/preferences.d/mozillateam
+    contents: |
+      Package: thunderbird*
+      Pin: release o=LP-PPA-mozillateam
+      Pin-Priority: 1001
+
+      Package: thunderbird*
+      Pin: release o=Ubuntu
+      Pin-Priority: -1
+
+- name: Install Thunderbird
+  ansible.builtin.apt:
+    name: thunderbird
+    state: present
