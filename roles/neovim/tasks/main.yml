@@ -10,3 +10,9 @@
   ansible.builtin.copy:
     src: assets/bob-path.sh
     dest: /etc/profile.d/bob-path.sh
+
+- name: Remove system-wide NeoVim
+  when: ansible_platform == "Windows"
+  ansible.windows.win_package:
+    product_id: Neovim.Neovim
+    state: absent
