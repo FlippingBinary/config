@@ -1,0 +1,90 @@
+---
+- name: Check for system package updates
+  register: update_results
+  ansible.windows.win_updates:
+    state: searched
+
+- name: Display unique update categories
+  debug:
+    msg: "{{ update_results.updates | map(attribute='category') | list | unique }}"
+
+- name: Update system packages
+  ansible.windows.win_updates:
+    reboot: true
+    skip_optional: true
+  register: system_update_result
+  until: system_update_result.found_update_count == 0
+
+- name: "Remove '{{ item }}'"
+  loop:
+    - Microsoft.BingNews
+    - Microsoft.BingWeather
+    - Microsoft.GamingApp
+    - Microsoft.GetHelp
+    - Microsoft.Getstarted
+    - Microsoft.Microsoft3DViewer
+    - Microsoft.MicrosoftOfficeHub
+    - Microsoft.MicrosoftSolitaireCollection
+    - Microsoft.MicrosoftStickyNotes
+    - Microsoft.MixedReality.Portal
+    - Microsoft.Office.OneNote
+    - Microsoft.OneConnect
+    - Microsoft.People
+    - Microsoft.PowerAutomateDesktop
+    - Microsoft.Print3D
+    - Microsoft.ScreenSketch
+    - Microsoft.SkypeApp
+    - Microsoft.Todos
+    - Microsoft.Wallet
+    - Microsoft.Windows.Photos
+    - Microsoft.WindowsAlarms
+    - Microsoft.WindowsCamera
+    - Microsoft.WindowsFeedbackHub
+    - Microsoft.WindowsMaps
+    - Microsoft.WindowsSoundRecorder
+    - Microsoft.Xbox.TCUI
+    - Microsoft.Xbox
+    - Microsoft.XboxApp
+    - Microsoft.XboxGameOverlay
+    - Microsoft.XboxSpeechToTextOverlay
+    - Microsoft.YourPhone
+    - Microsoft.ZuneMusic
+    - Microsoft.ZuneVideo
+    - MicrosoftTeams
+  ansible.windows.win_package:
+    product_id: "{{ item.key }}"
+    state: absent
+
+- name: Turn on development without dev license (Developer Mode)
+  ansible.windows.win_regedit:
+    path: HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock
+    name: AllowDevelopmentWithoutDevLicense
+    data: 1
+    type: dword
+
+- name: "Enable firewall rule {{ item }}"
+  community.windows.win_firewall_rule:
+    name: "{{ item }}"
+    enabled: true
+  loop:
+    - RemoteDesktop-Shadow-In-TCP
+    - RemoteDesktop-UserMode-In-TCP
+    - RemoteDesktop-UserMode-In-UDP
+
+- name: "Install {{ item }}"
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: "{{ item }}"
+  loop:
+    - Microsoft.AppInstaller
+    - Microsoft.PowerShell
+    - Microsoft.PowerToys
+    - Microsoft.Sysinternals.PsTools
+    - Microsoft.WinDbg
+    - Microsoft.WindowsTerminal
+    - Vivaldi.Vivaldi
+    - 7zip.7zip
+    - AstroComma.AstroGrep
+    - BurntSushi.ripgrep.MSVC
+    - Obsidian.Obsidian
+    - WinMerge.WinMerge
