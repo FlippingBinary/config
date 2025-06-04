@@ -1,7 +1,6 @@
 ---
 - name: Manage NerdFont (Linux)
   when: ansible_system == "Linux" and ansible_virtualization_type != "wsl"
-  become: true
   ansible.builtin.include_tasks: linux.yml
 
 - name: Manage NerdFont (Windows)
