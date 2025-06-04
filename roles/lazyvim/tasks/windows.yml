@@ -1,4 +1,16 @@
 ---
+- name: "Install {{ item }}"
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: "{{ item }}"
+  loop:
+    - Microsoft.PowerShell
+    - Microsoft.WindowsTerminal
+    - 7zip.7zip
+    - AstroComma.AstroGrep
+    - BurntSushi.ripgrep.MSVC
+    - junegunn.fzf
+
 - name: Clone LazyVim configuration
   ansible.windows.win_powershell:
     parameters:
