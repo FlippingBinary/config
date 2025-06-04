@@ -1,0 +1,5 @@
+---
+- name: Install GoLang
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: GoLang.Go
