@@ -1,10 +1,23 @@
 ---
-- name: Install Hyper-V and containers
+- name: Enable Windows optional features.
   ansible.windows.win_optional_feature:
     name:
       - containers
       - Microsoft-Hyper-V
+      - Microsoft-Windows-Subsystem-Linux
+      - VirtualMachinePlatform
     state: present
+    include_parent: true
+  register: feature_status
+
+- name: Activate features with reboot
+  ansible.windows.win_reboot:
+  when: feature_status.results | selectattr('reboot_required') | map(attribute='reboot_required') | list | length > 0
+
+- name: "Install Ubuntu 24.04"
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: Canonical.Ubuntu.2404
 
 - name: Install Docker CLI
   ansible.builtin.include_tasks: winget.yml
