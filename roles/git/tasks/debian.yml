@@ -1,11 +1,13 @@
 ---
 - name: Install Git
+  become: true
   ansible.builtin.apt:
     name: git
     state: present
     update_cache: true
 
 - name: Install GitHub CLI
+  become: true
   ansible.builtin.apt:
     name: gh
     state: present
