@@ -12,7 +12,7 @@
     dest: /etc/profile.d/bob-path.sh
 
 - name: Remove system-wide NeoVim
-  when: ansible_platform == "Windows"
+  when: ansible_system == "Windows"
   ansible.windows.win_package:
     product_id: Neovim.Neovim
     state: absent
