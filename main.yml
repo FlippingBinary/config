@@ -5,6 +5,7 @@
     - secrets.yml
   roles:
     - network
+    - ssh
 
 - name: Workstation
   hosts: workstation
@@ -12,7 +13,7 @@
     - secrets.yml
   roles:
     - comms
-    - nerdfont
+    - docs
     - trusted
     - virtualization
 
