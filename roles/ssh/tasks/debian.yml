@@ -46,7 +46,7 @@
 - name: Enable SSHd
   become: true
   ansible.builtin.service:
-    name: sshd
+    name: ssh
     enabled: true
     state: started
 
