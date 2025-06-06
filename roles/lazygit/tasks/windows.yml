@@ -5,13 +5,11 @@
     id: JesseDuffield.lazygit
 
 - name: Ensure config directory exists
-  when: ansible_system == "Windows"
   ansible.windows.win_file:
     path: "{{ lazygit_config_dir }}"
     state: directory
 
 - name: Copy lazygit config file
-  when: ansible_system == "Windows"
   ansible.windows.win_copy:
     src: "assets/lazygit.yml"
     dest: "{{ lazygit_config_dir }}\\config.yml"
