@@ -77,9 +77,14 @@
 - name: Manage docker service
   become: true
   ansible.builtin.service:
-    name:
-      - docker
-      - containerd
+    name: docker
+    enabled: true
+    state: started
+
+- name: Manage containerd service
+  become: true
+  ansible.builtin.service:
+    name: containerd
     enabled: true
     state: started
 
