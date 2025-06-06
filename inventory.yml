@@ -47,4 +47,5 @@ wsl:
     wsl.thinkpad:
   vars:
     ansible_port: 2222
+    ansible_user: jon
 
