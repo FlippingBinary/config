@@ -65,6 +65,46 @@
     update_cache: true
     state: present
 
+- name: Get NVIDIA Container Toolkit GPG key
+  become: true
+  when: nvidia_container_toolkit
+  register: gpg_key_download
+  ansible.builtin.get_url:
+    url: https://nvidia.github.io/libnvidia-container/gpgkey
+    dest: /etc/apt/keyrings/nvidia-container-toolkit-keyring.asc
+    mode: u+rw,g+r,o+r
+
+
+- name: Add NVIDIA Container Toolkit repository
+  become: true
+  when: nvidia_container_toolkit
+  ansible.builtin.apt_repository:
+    repo: >
+      deb
+      [arch={{ arch_map[ansible_architecture] | default(ansible_architecture) }}
+      signed-by=/etc/apt/keyrings/nvidia-container-toolkit-keyring.asc]
+      https://nvidia.github.io/libnvidia-container/stable/deb/{{ arch_map[ansible_architecture] | default(ansible_architecture) }}
+      /
+    state: present
+  vars:
+    arch_map:
+      x86_64: amd64
+      aarch64: arm64
+      armv6l: armel
+      armv7l: armhf
+      i386: i386
+      i686: i386
+      ppc: powerpc
+
+- name: Install NVIDIA Container Toolkit
+  become: true
+  when: nvidia_container_toolkit
+  ansible.builtin.apt:
+    name:
+      - nvidia-container-toolkit
+    update_cache: true
+    state: present
+
 - name: Add Ansible user to docker group
   become: true
   ansible.builtin.user:

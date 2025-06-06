@@ -42,6 +42,7 @@ workstation:
 wsl:
   hosts:
     wsl.cougar:
+      nvidia_container_toolkit: true
     wsl.thinkpad:
   vars:
     ansible_port: 2222
