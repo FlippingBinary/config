@@ -2,4 +2,5 @@
 dependencies:
   - role: git
   - role: neovim
+  - role: nerdfont
   - role: rust
