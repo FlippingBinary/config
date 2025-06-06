@@ -1,0 +1,29 @@
+---
+- name: Enable mirrored networking for WSL
+  # NOTE: This assumes the hostname of the guest is a
+  # dot-separated extension of the host.
+  delegate_to: "{{ inventory_hostname.split('.')[-1] }}"
+  when: inventory_hostname | regex_search('\.')
+  community.general.ini_file:
+    path: "{{ ansible_user_dir }}\\.wslconfig"
+    section: wsl2
+    option: networkingMode
+    value: mirrored
+
+- name: Configure WSL host address loopback
+  # NOTE: This assumes the hostname of the guest is a
+  # dot-separated extension of the host.
+  delegate_to: "{{ inventory_hostname.split('.')[-1] }}"
+  community.general.ini_file:
+    path: "{{ ansible_user_dir }}\\.wslconfig"
+    section: experimental
+    option: hostAddressLoopback
+    value: true
+
+- name: Set hostname
+  notify: Restart WSL
+  community.general.ini_file:
+    path: /etc/wsl.conf
+    section: network
+    option: hostname
+    value: "{{ ansible_hostname }}"
