@@ -1,0 +1,35 @@
+---
+- name: Get SoftMaker GPG key
+  become: true
+  register: gpg_key_download
+  ansible.builtin.get_url:
+    url: https://shop.softmaker.com/repo/linux-repo-public.key
+    dest: /etc/apt/keyrings/softmaker.asc
+    mode: u+rw,g+r,o+r
+
+- name: Add SoftMaker repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: >
+      deb
+      [arch={{ arch_map[ansible_architecture] | default(ansible_architecture) }}
+      signed-by=/etc/apt/keyrings/softmaker.asc]
+      https://shop.softmaker.com/repo/apt stable non-free
+    state: present
+  vars:
+    arch_map:
+      x86_64: amd64
+      aarch64: arm64
+      armv6l: armel
+      armv7l: armhf
+      i386: i386
+      i686: i386
+      ppc: powerpc
+
+- name: Install SoftMaker FreeOffice
+  become: true
+  ansible.builtin.apt:
+    name:
+      - softmaker-freeoffice-2024
+    state: present
+

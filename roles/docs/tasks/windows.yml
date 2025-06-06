@@ -1,0 +1,5 @@
+---
+- name: Install FreeOffice
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: SoftMaker.FreeOffice.2024
