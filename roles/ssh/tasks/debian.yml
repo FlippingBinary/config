@@ -61,3 +61,4 @@
   ansible.builtin.lineinfile:
     path: "{{ ssh_config_dir }}/authorized_keys"
     line: "{{ item }}"
+    create: true
