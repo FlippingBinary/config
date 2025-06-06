@@ -1,6 +1,7 @@
 all:
   hosts:
     proxmox:
+      ansible_user: root
 
 development:
   hosts:
