@@ -1,7 +1,7 @@
 ---
-- name: Manage Node (Debian-like)
-  when: ansible_os_family == "Debian"
-  ansible.builtin.include_tasks: debian.yml
+- name: Manage Node (Linux)
+  when: ansible_system == "Linux"
+  ansible.builtin.include_tasks: linux.yml
 
 - name: Manage Node (Windows)
   when: ansible_system == "Windows"

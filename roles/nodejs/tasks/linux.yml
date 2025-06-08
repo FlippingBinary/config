@@ -1,0 +1,22 @@
+---
+- name: Clone NVM
+  ansible.builtin.git:
+    repo: https://github.com/nvm-sh/nvm.git
+    dest: "{{ ansible_user_dir + '/.nvm' }}"
+    clone: true
+    depth: 1
+    force: true
+    recursive: false
+
+- name: Configure NVM in profile
+  become: true
+  ansible.builtin.copy:
+    content: |
+      #!/usr/bin/env sh
+
+      export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+    dest: /etc/profile.d/nvm.sh
+
+- name: Install Node LTS
+  ansible.builtin.shell: bash -lc 'nvm install --lts'
