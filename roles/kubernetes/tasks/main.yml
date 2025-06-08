@@ -1,0 +1,12 @@
+---
+- name: Manage Kubernetes (Debian-like)
+  when: ansible_os_family == "Debian"
+  ansible.builtin.include_tasks: debian.yml
+
+- name: Manage Kubernetes (Windows)
+  when: ansible_system == "Windows"
+  ansible.builtin.include_tasks: windows.yml
+  vars:
+    kubernetes_path: "{{ lookup('env','PROGRAMFILES') }}\\kubernetes"
+    nssm_path: "{{ lookup('env','PROGRAMFILES') }}\\nssm"
+    kubernetes_version: "v1.25.3"

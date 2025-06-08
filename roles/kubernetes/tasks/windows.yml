@@ -1,0 +1,89 @@
+---
+- name: Kubernetes on Windows
+  ansible.builtin.fail:
+    msg: Kubernetes on Windows is not yet ready for use.
+
+# Inspired by https://raw.githubusercontent.com/kubernetes-sigs/sig-windows-tools/master/hostprocess/PrepareNode.ps1
+
+- name: Download kubelet
+  register: download_kubelet_result
+  ansible.windows.win_get_url:
+    url: "https://dl.k8s.io/{{ kubernetes_version }}/bin/windows/amd64/kubelet.exe"
+    dest: "{{ kubernetes_path }}\\kubelet.exe"
+
+- name: Download kubeadm
+  register: download_kubeadm_result
+  ansible.windows.win_get_url:
+    url: "https://dl.k8s.io/{{ kubernetes_version }}/bin/windows/amd64/kubeadm.exe"
+    dest: "{{ kubernetes_path }}\\kubeadm.exe"
+
+- name: Download nssm
+  register: download_nssm_result
+  ansible.windows.win_get_url:
+    url: "https://k8stestinfrabinaries.blob.core.windows.net/nssm-mirror/nssm-2.24.zip"
+    dest: "{{ nssm_path }}\\nssm.zip"
+
+- name: Install nssm
+  when: download_nssm_result is changed
+  community.windows.win_unzip:
+    src: "{{ nssm_path }}\\nssm.zip"
+    dest: "{{ nssm_path }}"
+
+- name: Configure path
+  ansible.windows.win_path:
+    elements:
+      - "{{ kubernetes_path }}"
+      - "{{ nssm_path }}\\win64"
+
+- name: Create kubelet script
+  ansible.windows.win_copy:
+    content: |
+      $FileContent = Get-Content -Path "/var/lib/kubelet/kubeadm-flags.env"
+      $global:KubeletArgs = $FileContent.TrimStart('KUBELET_KUBEADM_ARGS=').Trim('"')
+
+      $cmd = "{{ kubernetes_path }}\kubelet.exe ", '$global:KubeletArgs ', '--cert-dir=$env:SYSTEMDRIVE\var\lib\kubelet\pki ', "--config=/var/lib/kubelet/config.yaml ", "--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf ", "--kubeconfig=/etc/kubernetes/kubelet.conf ", "--hostname-override=$HostnameOverride ", '--pod-infra-container-image=`"mcr.microsoft.com/oss/kubernetes/pause:3.6`" ', "--enable-debugging-handlers ", "--cgroups-per-qos=false ", '--enforce-node-allocatable=`"`" ', '--resolv-conf=`"`" '
+      Invoke-Expression $cmd
+    dest: "{{ kubernetes_path }}\\StartKubelet.ps1"
+
+- name: Check if kubelet service exists
+  ansible.builtin.win_service_info:
+    name: kubelet
+  register: kubelet_service
+
+- name: Setup kubelet service
+  when: kubelet_service.exists is not defined or not kubelet_service.exists
+  block:
+    - name: Register kubelet service
+      ansible.windows.win_command:
+        argv:
+          - nssm.exe
+          - install
+          - kubelet
+          - powershell
+          - -ExecutionPolicy
+          - Bypass
+          - -NoProfile
+          - "{{ kubernetes_path }}\\StartKubelet.ps1"
+
+    - name: Configure kubelet service
+      ansible.windows.win_command: "{{ item }}"
+      loop:
+        - "nssm.exe set kubelet AppStdout '{{ kubernetes_path }}\\kubelet\\kubelet.out.log'"
+        - "nssm.exe set kubelet AppStderr '{{ kubernetes_path }}\\kubelet\\kubelet.err.log'"
+        - "nssm.exe set kubelet AppRotateFiles 1"
+        - "nssm.exe set kubelet AppRotateOnline 1"
+        - "nssm.exe set kubelet AppRotateSeconds 86400"
+        - "nssm.exe set kubelet AppRotateBytes 10485760"
+        - "nssm.exe set kubelet DependOnService containerd"
+
+- name: Configure kubelet firewall rule
+  community.windows.win_firewall_rule:
+    name: kubelet
+    display_name: kubelet
+    localport: 10250
+    action: allow
+    direction: in
+    protocol: tcp
+    enabled: yes
+    state: present
+

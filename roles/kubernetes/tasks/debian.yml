@@ -1,0 +1,54 @@
+---
+- name: Install Kubernetes dependencies
+  become: true
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gpg
+    update_cache: true
+    state: present
+
+- name: Get Kubernetes GPG key
+  become: true
+  ansible.builtin.get_url:
+    url: https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key
+    dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
+    mode: u+rw,g+r,o+r
+
+- name: Add Kubernetes repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: >
+      deb
+      [arch={{ arch_map[ansible_architecture] | default(ansible_architecture) }}
+      signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc]
+      https://pkgs.k8s.io/core:/stable:/v1.33/deb/
+      /
+    state: present
+  vars:
+    arch_map:
+      x86_64: amd64
+      aarch64: arm64
+      armv6l: armel
+      armv7l: armhf
+      i386: i386
+      i686: i386
+      ppc: powerpc
+
+- name: Install Kubernetes packages
+  become: true
+  ansible.builtin.apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    update_cache: true
+    state: present
+
+- name: Enable kubelet service
+  ansible.builtin.service:
+    name: kubelet
+    state: started
+    enabled: true

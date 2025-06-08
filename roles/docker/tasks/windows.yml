@@ -1,0 +1,56 @@
+---
+- name: Install Windows features
+  register: install_windows_feature_result
+  ansible.windows.win_feature:
+    name:
+      - Containers
+      - Hyper-V
+      - Hyper-V-PowerShell
+    state: present
+
+- name: Enable Windows optional features.
+  register: enable_optional_feature_result
+  ansible.windows.win_optional_feature:
+    name:
+      - Containers
+      - Microsoft-Hyper-V
+    state: present
+    include_parent: true
+
+- name: Disable Windows optional features.
+  register: disable_optional_feature_result
+  ansible.windows.win_optional_feature:
+    name:
+      - Microsoft-Hyper-V-Online
+    state: absent
+    include_parent: true
+
+- name: Activate features with reboot
+  ansible.windows.win_reboot:
+  when: >
+    (install_windows_feature_result.results | selectattr('reboot_required') | map(attribute='reboot_required') | list | length > 0) or
+    (enable_optional_feature_result.results | selectattr('reboot_required') | map(attribute='reboot_required') | list | length > 0) or
+    (disable_optional_feature_result.results | selectattr('reboot_required') | map(attribute='reboot_required') | list | length > 0)
+
+- name: Install Docker CLI
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: Docker.DockerCLI
+
+- name: Manage docker service
+  ansible.windows.win_powershell:
+    script: |
+      [CmdletBinding(SupportsShouldProcess)]
+      param ()
+
+      if ( -not Get-Service -Name docker -ErrorAction SilentlyContinue ) {
+        $Ansible.changed = false
+      } elseif ($PSCmdlet.ShouldProcess('target')) {
+        dockerd --register-service
+      }
+
+- name: Enable docker service
+  ansible.builtin.win_service:
+    name: docker
+    state: started
+    enabled: true

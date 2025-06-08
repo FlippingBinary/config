@@ -1,0 +1,3 @@
+---
+- name: Reconnect to finalize group membership
+  ansible.builtin.meta: reset_connection

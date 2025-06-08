@@ -1,8 +1,10 @@
 ---
-- name: Manage container platform (Debian-like)
+- name: Manage containerd (Debian-like)
   when: ansible_os_family == "Debian"
   ansible.builtin.include_tasks: debian.yml
 
-- name: Manage container platform (Windows)
+- name: Manage containerd (Windows)
   when: ansible_system == "Windows"
   ansible.builtin.include_tasks: windows.yml
+  vars:
+    containerd_path: "{{ lookup('env','PROGRAMFILES') }}\\containerd"

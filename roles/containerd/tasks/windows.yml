@@ -1,0 +1,117 @@
+---
+# Inspired by: https://raw.githubusercontent.com/kubernetes-sigs/sig-windows-tools/master/hostprocess/Install-Containerd.ps1
+
+- name: Install Windows features
+  register: install_windows_feature_result
+  ansible.windows.win_feature:
+    name:
+      - Containers
+      - Hyper-V
+      - Hyper-V-PowerShell
+    state: present
+
+- name: Enable Windows optional features.
+  register: enable_optional_feature_result
+  ansible.windows.win_optional_feature:
+    name:
+      - Containers
+      - Microsoft-Hyper-V
+    state: present
+    include_parent: true
+
+- name: Disable Windows optional features.
+  register: disable_optional_feature_result
+  ansible.windows.win_optional_feature:
+    name:
+      - Microsoft-Hyper-V-Online
+    state: absent
+    include_parent: true
+
+- name: Activate features with reboot
+  ansible.windows.win_reboot:
+  when: >
+    (install_windows_feature_result.results | selectattr('reboot_required') | map(attribute='reboot_required') | list | length > 0) or
+    (enable_optional_feature_result.results | selectattr('reboot_required') | map(attribute='reboot_required') | list | length > 0) or
+    (disable_optional_feature_result.results | selectattr('reboot_required') | map(attribute='reboot_required') | list | length > 0)
+
+- name: Get latest Containerd version from GitHub
+  register: containerd_release
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/containerd/containerd/releases/latest
+    return_content: yes
+
+- name: Set Containerd version fact
+  when: containerd_release is defined
+  ansible.builtin.set_fact:
+    containerd_version: "{{ containerd_release.json.tag_name | regex_replace('^v', '') }}"
+
+- name: Download Containerd
+  register: download_containerd_result
+  when: containerd_version is defined
+  ansible.windows.win_get_url:
+    url: "https://github.com/containerd/containerd/releases/download/v{{ containerd_version }}/containerd-{{ containerd_version }}-windows-amd64.tar.gz"
+    dest: "{{ containerd_path }}\\containerd-{{ containerd_version }}-windows-amd64.tar.gz"
+
+- name: Install Containerd
+  when: download_containerd_result is changed
+  community.windows.win_unzip:
+    src: "{{ containerd_path }}\\containerd-{{ containerd_version }}-windows-amd64.tar.gz"
+    dest: "{{ containerd_path }}"
+
+- name: Configure path
+  ansible.windows.win_path:
+    elements:
+      - "{{ containerd_path }}\\bin"
+
+- name: Generate Containerd configuration
+  ansible.windows.win_command:
+    creates: "{{ containerd_path }}\\config.toml"
+    argv:
+      - powershell.exe
+      - -ExecutionPolicy
+      - Bypass
+      - -NoProfile
+      - -Command
+      - >
+        {{ containerd_path }}\\bin\\containerd.exe config default |
+        Out-File -Encoding UTF8 {{ containerd_path }}\\config.toml
+
+- name: Get latest CRI-tools version from GitHub
+  register: critools_release
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/kubernetes-sigs/cri-tools/releases/latest
+    return_content: yes
+
+- name: Set CRI-tools version fact
+  when: critools_release is defined
+  ansible.builtin.set_fact:
+    critools_version: "{{ critools_release.json.tag_name | regex_replace('^v', '') }}"
+
+- name: Download CRI-tools
+  register: download_critools_result
+  when: critools_version is defined
+  ansible.windows.win_get_url:
+    url: "https://github.com/kubernetes-sigs/cri-tools/releases/download/v{{ critools_version }}/crictl-v{{ critools_version }}-windows-amd64.tar.gz"
+    dest: "{{ containerd_path }}\\crictl-v{{ critools_version }}-windows-amd64.tar.gz"
+
+- name: Install CRI-tools
+  when: download_critools_result is changed
+  community.windows.win_unzip:
+    src: "{{ containerd_path }}\\crictl-v{{ critools_version }}-windows-amd64.tar.gz"
+    dest: "{{ containerd_path }}"
+
+- name: Configure CRI-tools runtime endpoint
+  community.windows.win_lineinfile:
+    path: "{{ ansible_user_dir }}\\.crictl\\crictl.yaml"
+    create: true
+    encoding: utf-8
+    regex: '^runtime-endpoint:'
+    line: "runtime-endpoint: npipe://./pipe/containerd-containerd"
+
+- name: Configure CRI-tools image endpoint
+  community.windows.win_lineinfile:
+    path: "{{ ansible_user_dir }}\\.crictl\\crictl.yaml"
+    create: true
+    encoding: utf-8
+    regex: '^image-endpoint:'
+    line: "image-endpoint: npipe://./pipe/containerd-containerd"

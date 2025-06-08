@@ -1,0 +1,4 @@
+---
+- name: Manage WSL2 (Windows)
+  when: ansible_system == "Windows"
+  ansible.builtin.include_tasks: windows.yml
