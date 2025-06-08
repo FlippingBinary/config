@@ -1,6 +1,8 @@
 ---
 dependencies:
   - role: git
+  - role: golang
   - role: neovim
   - role: nerdfont
+  - role: nodejs
   - role: rust

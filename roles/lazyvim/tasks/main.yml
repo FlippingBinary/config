@@ -7,6 +7,10 @@
   when: ansible_system == "Windows"
   ansible.builtin.include_tasks: windows.yml
 
+- name: Install tree-sitter CLI
+  community.general.cargo:
+    name: tree-sitter-cli
+
 - name: Install fd-find with Cargo
   community.general.cargo:
     name: fd-find

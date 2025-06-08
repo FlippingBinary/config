@@ -1,0 +1,8 @@
+---
+- name: Install GoLang
+  become: true
+  ansible.builtin.apt:
+    name:
+      - golang
+    state: present
+    update_cache: true

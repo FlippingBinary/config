@@ -3,8 +3,12 @@
   become: true
   ansible.builtin.apt:
     name:
-      - ripgrep
       - fzf
+      - imagemagick
+      - python3-pip
+      - python3-venv
+      - ripgrep
+      - unzip
     state: present
     update_cache: true
 

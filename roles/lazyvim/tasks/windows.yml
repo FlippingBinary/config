@@ -10,6 +10,8 @@
     - AstroComma.AstroGrep
     - BurntSushi.ripgrep.MSVC
     - junegunn.fzf
+    - ImageMagick.ImageMagick
+    - Python.Python.3.12
 
 - name: Clone LazyVim configuration
   ansible.windows.win_powershell:
