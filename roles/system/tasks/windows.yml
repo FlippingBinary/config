@@ -95,3 +95,35 @@
     - Obsidian.Obsidian
     - Vivaldi.Vivaldi
     - WinMerge.WinMerge
+
+- name: Configure PowerShell Vi mode
+  community.windows.win_lineinfile:
+    create: true
+    path: "{{ lookup('env','PROFILE') }}"
+    line: "Set-PSReadlineOption -EditMode Vi"
+
+- name: Disable 'Show frequently used folders in Quick Access'
+  ansible.windows.win_regedit:
+    path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+    name: ShowFrequent
+    data: 0
+    type: dword
+
+- name: Disable 'Show recently used files in Quick Access'
+  ansible.windows.win_regedit:
+    path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+    name: ShowRecent
+    data: 0
+    type: dword
+
+- name: Disable recent document history via Group Policy registry key
+  ansible.windows.win_regedit:
+    path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer
+    name: NoRecentDocsHistory
+    data: 1
+    type: dword
+
+- name: Clear Quick Access history
+  ansible.windows.win_file:
+    path: "{{ lookup('env','APPDATA') }}\\Microsoft\\Windows\\Recent"
+    state: absent
