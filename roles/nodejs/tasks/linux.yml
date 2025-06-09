@@ -15,8 +15,10 @@
       #!/usr/bin/env sh
 
       export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+      [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
     dest: /etc/profile.d/nvm.sh
 
 - name: Install Node LTS
   ansible.builtin.shell: bash -lc 'nvm install --lts'
+  register: node_install
+  changed_when: "'is already installed' not in node_install.stderr"
