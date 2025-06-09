@@ -43,8 +43,25 @@
       - vs_tools_results.result.msvc_path
       - vs_tools_results.result.llvm_path
 
+- name: Install Rust version 1.74.0
+  ansible.windows.win_command: rustup toolchain install 1.74.0
+  register: rustup_old
+  changed_when: "' unchanged ' not in rustup_old.stdout"
+
 - name: Set default Rust version
   ansible.windows.win_command: rustup default stable
+  register: rustup_default
+  changed_when: "' unchanged ' not in rustup_default.stdout"
+
+- name: Add rust-analyzer for Rust version 1.74.0
+  ansible.windows.win_command: rustup +1.74.0 component add rust-analyzer
+  register: rust_analyzer_old
+  changed_when: "'is up to date' not in rust_analyzer_old.stdout"
+
+- name: Add rust-analyzer for stable Rust
+  ansible.windows.win_command: rustup component add rust-analyzer
+  register: rust_analyzer
+  changed_when: "'is up to date' not in rust_analyzer.stdout"
 
 - name: Remove Zig compiler
   ansible.windows.win_package:

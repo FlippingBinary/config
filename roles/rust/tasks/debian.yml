@@ -14,7 +14,22 @@
     src: assets/cargo-path.sh
     dest: /etc/profile.d/cargo-path.sh
 
+- name: Install Rust version 1.74.0
+  ansible.builtin.command: rustup toolchain install 1.74.0
+  register: rustup_old
+  changed_when: "' unchanged ' not in rustup_old.stdout"
+
 - name: Set default Rust version
   ansible.builtin.command: rustup default stable
   register: rustup_default
   changed_when: "' unchanged ' not in rustup_default.stdout"
+
+- name: Add rust-analyzer for Rust version 1.74.0
+  ansible.builtin.command: rustup +1.74.0 component add rust-analyzer
+  register: rust_analyzer_old
+  changed_when: "'is up to date' not in rust_analyzer_old.stdout"
+
+- name: Add rust-analyzer for stable Rust
+  ansible.builtin.command: rustup component add rust-analyzer
+  register: rust_analyzer
+  changed_when: "'is up to date' not in rust_analyzer.stdout"
