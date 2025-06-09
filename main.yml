@@ -15,21 +15,21 @@
     - comms
     - docs
     - trusted
-    - virtualization
+    - docker
 
-- name: Virtualization
+- name: Kubernetes
   hosts: kube:worker
   vars_files:
     - secrets.yml
   roles:
-    - virtualization
+    - kubernetes
 
 - name: Development Environment
   hosts: development
   vars_files:
     - secrets.yml
   roles:
-    - virtualization
+    - docker
     - lazyvim
     - oh-my-posh
 
@@ -40,3 +40,9 @@
   roles:
     - proxmox
 
+- name: Artificial Intelligence
+  hosts: wsl.cougar
+  vars_files:
+    - secrets.yml
+  roles:
+    - ai
