@@ -83,15 +83,15 @@
   vars:
     id: "{{ item }}"
   loop:
+    - 7zip.7zip
+    - AstroComma.AstroGrep
+    - BurntSushi.ripgrep.MSVC
     - Microsoft.AppInstaller
     - Microsoft.PowerShell
     - Microsoft.PowerToys
     - Microsoft.Sysinternals.PsTools
     - Microsoft.WinDbg
     - Microsoft.WindowsTerminal
-    - Vivaldi.Vivaldi
-    - 7zip.7zip
-    - AstroComma.AstroGrep
-    - BurntSushi.ripgrep.MSVC
     - Obsidian.Obsidian
+    - Vivaldi.Vivaldi
     - WinMerge.WinMerge
