@@ -1,0 +1,12 @@
+---
+- name: Install Oh-My-Posh
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: JanDeDobbeleer.OhMyPosh
+
+- name: Configure Oh-My-Posh theme
+  community.windows.win_lineinfile:
+    create: true
+    path: "{{ lookup('env','PROFILE') }}"
+    line: "oh-my-posh init pwsh --config \"$env:POSH_THEMES_PATH/powerlevel10k_lean.omp.json\" | Invoke-Expression"
+

@@ -1,0 +1,8 @@
+---
+- name: Manage Oh-My-Posh (Debian-like)
+  when: ansible_os_family == "Debian"
+  ansible.builtin.include_tasks: debian.yml
+
+- name: Manage Oh-My-Posh (Windows)
+  when: ansible_system == "Windows"
+  ansible.builtin.include_tasks: windows.yml

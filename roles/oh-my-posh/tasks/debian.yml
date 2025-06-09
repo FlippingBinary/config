@@ -1,0 +1,47 @@
+---
+- name: Local bin directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_user_dir }}/.local/bin"
+    state: directory
+    mode: '0755'
+
+- name: Download Oh-My-Posh
+  ansible.builtin.get_url:
+    url: https://cdn.ohmyposh.dev/releases/latest/posh-{{ ansible_system | lower }}-{{ arch_map[ansible_architecture] | default(ansible_architecture) }}
+    dest: "{{ ansible_user_dir }}/.local/bin/oh-my-posh"
+    mode: "0755"
+  vars:
+    arch_map:
+      x86_64: amd64
+      aarch64: arm64
+      armv6l: arm
+      armv7l: arm
+      i386: "386"
+      i686: "386"
+      ppc: powerpc
+
+- name: Oh-My-Posh cache directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_user_dir }}/.cache/oh-my-posh/themes"
+    state: directory
+    mode: '0755'
+
+- name: Install Oh-My-Posh themes
+  ansible.builtin.unarchive:
+    src: https://cdn.ohmyposh.dev/releases/latest/themes.zip
+    dest: "{{ ansible_user_dir }}/.cache/oh-my-posh/themes"
+    remote_src: true
+
+- name: Configure Bash with Oh-My-Posh powerlevel10k_lean theme
+  failed_when: false
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_user_dir }}/.bashrc"
+    line: 'eval "$(~/.local/bin/oh-my-posh init bash --config ~/.cache/oh-my-posh/themes/powerlevel10k_lean.omp.json)"'
+    regexp: '^eval\s+"\$\(\s*.*oh-my-posh\s+init\s+bash.*\)"'
+
+- name: Configure ZSH with Oh-My-Posh powerlevel10k_lean theme
+  failed_when: false
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_user_dir }}/.zshrc"
+    line: 'eval "$(~/.local/bin/oh-my-posh init zsh --config ~/.cache/oh-my-posh/themes/powerlevel10k_lean.omp.json)"'
+    regexp: '^eval\s+"\$\(\s*.*oh-my-posh\s+init\s+zsh.*\)"'
