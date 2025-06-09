@@ -57,14 +57,14 @@
 
 - name: Turn on development without dev license (Developer Mode)
   ansible.windows.win_regedit:
-    path: HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock
+    path: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock
     name: AllowDevelopmentWithoutDevLicense
     data: 1
     type: dword
 
 - name: Prevent "Let's add your Microsoft Account" un-skippable prompt
   ansible.windows.win_regedit:
-    path: HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent
+    path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent
     name: DisableWindowsConsumerFeatures
     data: 1
     type: dword
