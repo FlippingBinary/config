@@ -16,3 +16,5 @@
 
 - name: Set default Rust version
   ansible.builtin.command: rustup default stable
+  register: rustup_default
+  changed_when: "' unchanged ' not in rustup_default.stdout"
