@@ -1,0 +1,38 @@
+---
+- name: Install NFS client software
+  become: true
+  ansible.builtin.apt:
+    name:
+      - nfs-common
+    state: present
+    update_cache: true
+
+- name: Create folder for Jellyfin
+  become: true
+  ansible.builtin.file:
+    path: /opt/jellyfin
+    state: directory
+    mode: u+rw,g+rw,o+r
+
+- name: Mount media folder
+  become: true
+  ansible.posix.mount:
+    src: "ds218play.goobygob.com:/volume1/GoobyDrive/Media"
+    path: "/media"
+    opts: rw,async,hard
+    state: mounted
+    fstype: nfs
+
+- name: Manage Jellyfin server's Docker compose
+  community.docker.docker_compose_v2:
+    project_name: jellyfin
+    definition:
+      services:
+        jellyfin:
+          image: jellyfin/jellyfin:latest
+          restart: always
+          volumes:
+            - "/opt/jellyfin/config:/config"
+            - "/opt/jellyfin/cache:/cache"
+            - "/media:/media"
+          network_mode: host
