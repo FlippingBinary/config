@@ -13,14 +13,41 @@
     state: present
     update_cache: true
 
-- name: Install ssh agent proxy
+- name: Find npiperelay.exe
+  ansible.builtin.shell: "which npiperelay.exe"
+  register: npiperelay_path
+  changed_when: false
+
+- name: Allow user processes to linger
+  become: true
   ansible.builtin.copy:
-    src: assets/wsl-ssh-agent.sh
-    dest: /etc/profile.d/wsl-ssh-agent.sh
+    dest: "/var/lib/systemd/linger/{{ ansible_user_id }}"
+    content: ""
+
+- name: Template systemd service file
+  register: ssh_agent_relay_service
+  ansible.builtin.template:
+    src: assets/ssh-agent-relay.service.j2
+    dest: ~/.config/systemd/user/ssh-agent-relay.service
+    mode: '0644'
+
+- name: Reload and start ssh agent relay service
+  ansible.builtin.systemd_service:
+    name: ssh-agent-relay
+    daemon_reexec: "{{ ssh_agent_relay_service is changed }}"
+    daemon_reload: "{{ ssh_agent_relay_service is changed }}"
+    scope: user
+    state: "{{ 'restarted' if (ssh_agent_relay_service is changed) else 'started' }}"
+    enabled: true
+
+- name: Configure ssh agent environment variable
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/profile.d/ssh-agent-relay.sh
+    content: "export SSH_AUTH_SOCK='{{ ansible_user_dir }}/.ssh/agent.sock'"
 
 - name: Configure SSHd to use alternate port
   become: true
   ansible.builtin.copy:
     src: "assets/sshd_config.alternate_port"
     dest: "/etc/ssh/sshd_config.d/alternate_port.conf"
-

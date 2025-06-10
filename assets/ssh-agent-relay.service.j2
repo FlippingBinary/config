@@ -1,0 +1,13 @@
+[Unit]
+Description=SSH Agent Relay using socat and npiperelay
+After=network.target
+ConditionPathExists={{ npiperelay_path.stdout | trim }}
+
+[Service]
+ExecStartPre=/bin/rm -f %h/.ssh/agent.sock
+ExecStart=/usr/bin/socat UNIX-LISTEN:%h/.ssh/agent.sock,fork EXEC:"{{ npiperelay_path.stdout | trim }} -ei -s //./pipe/openssh-ssh-agent",nofork
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

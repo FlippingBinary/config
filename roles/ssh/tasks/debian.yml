@@ -7,22 +7,6 @@
     state: present
     update_cache: true
 
-- name: Install socat
-  become: true
-  when: ansible_virtualization_type == 'wsl'
-  ansible.builtin.apt:
-    name:
-      - socat
-    state: present
-    update_cache: true
-
-- name: Install ssh agent proxy
-  become: true
-  when: ansible_virtualization_type == 'wsl'
-  ansible.builtin.copy:
-    src: assets/wsl-ssh-agent.sh
-    dest: /etc/profile.d/wsl-ssh-agent.sh
-
 - name: Install SSHd
   become: true
   ansible.builtin.apt:
