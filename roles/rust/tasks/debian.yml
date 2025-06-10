@@ -27,9 +27,9 @@
 - name: Add rust-analyzer for Rust version 1.74.0
   ansible.builtin.command: rustup +1.74.0 component add rust-analyzer
   register: rust_analyzer_old
-  changed_when: "'is up to date' not in rust_analyzer_old.stdout"
+  changed_when: "'is up to date' not in rust_analyzer_old.stderr"
 
 - name: Add rust-analyzer for stable Rust
   ansible.builtin.command: rustup component add rust-analyzer
   register: rust_analyzer
-  changed_when: "'is up to date' not in rust_analyzer.stdout"
+  changed_when: "'is up to date' not in rust_analyzer.stderr"
