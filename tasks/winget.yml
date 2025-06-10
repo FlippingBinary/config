@@ -3,21 +3,24 @@
   ansible.windows.win_powershell:
     parameters:
       Id: "{{ id }}"
+      Source: "{{ source | default('winget') }}"
       Version: "{{ version | default(omit) }}"
       Ensure: "{{ ensure | default('present') }}"
     script: |
       [CmdletBinding(SupportsShouldProcess)]
       param (
         [String] $Id,
+        [String] $Source = 'winget'
         [String] $Version = $null,
         [String] $Ensure = 'present'
       )
 
       $Ansible.Changed = $false
-      $before_version = ((winget list --id $Id --source winget --exact | Select-String -Pattern $Id) -split '\s{2,}')[2]
-      $before_pin = ((winget pin list --id $Id --source winget --exact | Select-String -Pattern $Id) -split '\s{2,}')[5]
+      $before_version = ((winget list --id $Id --source $Source --exact | Select-String -Pattern $Id) -split '\s{2,}')[2]
+      $before_pin = ((winget pin list --id $Id --source $Source --exact | Select-String -Pattern $Id) -split '\s{2,}')[5]
 
       $Ansible.Result = [PSCustomObject]@{
+        source = $Source
         before_version = $before_version
         version = $null
         before_pin = $before_pin
@@ -28,7 +31,7 @@
       if ($Version) {
         if ($Version -ne $before_pin) {
           if ($PSCmdlet.ShouldProcess('target')) {
-            winget pin add --source winget --id $Id --exact --version $Version --force
+            winget pin add --source $Source --id $Id --exact --version $Version --force
           }
           $Ansible.Changed = $true
           $Ansible.Result.pin = $Version
@@ -37,7 +40,7 @@
         }
       } elseif ($before_pin) {
         if ($PSCmdlet.ShouldProcess('target')) {
-          winget pin remove --source winget --id $Id --exact
+          winget pin remove --source $Source --id $Id --exact
         }
         $Ansible.Changed = $true
       }
@@ -58,7 +61,7 @@
             "--accept-package-agreements",
             "--accept-source-agreements",
             "--silent",
-            "--source", "winget",
+            "--source", $Source,
             "--id", $Id,
             "--exact"
           ) -Wait -PassThru
