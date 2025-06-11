@@ -48,7 +48,7 @@
       if ($Ensure -eq 'absent') {
         if ($before_version) {
           if ($PSCmdlet.ShouldProcess('target')) {
-            winget uninstall --id $Id --exact --silent
+            winget uninstall --id $Id --exact --disable-interactivity
           }
           $Ansible.Changed = $true
         }
@@ -60,7 +60,7 @@
             $action,
             "--accept-package-agreements",
             "--accept-source-agreements",
-            "--silent",
+            "--disable-interactivity",
             "--source", $Source,
             "--id", $Id,
             "--exact"
