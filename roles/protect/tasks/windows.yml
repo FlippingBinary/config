@@ -1,0 +1,6 @@
+---
+- name: Install Reolink desktop app
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: Reolink.Reolink
+
