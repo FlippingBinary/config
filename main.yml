@@ -49,3 +49,10 @@
     - secrets.yml
   roles:
     - ai
+
+- name: Internet of Things
+  hosts: kentucky-iot
+  vars_files:
+    - secrets.yml
+  roles:
+    - zwave
