@@ -1,12 +1,4 @@
 ---
-- name: Install SSH client
-  become: true
-  ansible.builtin.apt:
-    name:
-      - openssh-client
-    state: present
-    update_cache: true
-
 - name: Install SSHd
   become: true
   ansible.builtin.apt:
@@ -20,12 +12,6 @@
   ansible.builtin.copy:
     src: "assets/sshd_config.require_keys"
     dest: "/etc/ssh/sshd_config.d/require_keys.conf"
-
-- name: Configure SSHd to use alternate port
-  become: true
-  ansible.builtin.copy:
-    src: "assets/sshd_config.alternate_port"
-    dest: "/etc/ssh/sshd_config.d/alternate_port.conf"
 
 - name: Enable SSHd
   become: true

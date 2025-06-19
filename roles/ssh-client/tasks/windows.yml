@@ -1,0 +1,17 @@
+---
+- name: Install OpenSSH Client (Windows)
+  ansible.windows.win_powershell: |
+    [CmdletBinding(SupportsShouldProcess)]
+    param ()
+
+    $openssh = Get-WindowsCapability -Online | Where-Object { $_.Name -like 'OpenSSH.Client*' }
+    if ($openssh.State -eq "Installed") {
+      $Ansible.changed = $false
+    } elseif ($PSCmdlet.ShouldProcess('target')) {
+      $openssh | Add-WindowsCapability -Online
+    }
+
+- name: Install npiperelay (Windows)
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: albertony.npiperelay

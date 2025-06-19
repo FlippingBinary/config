@@ -1,0 +1,6 @@
+---
+- name: Configure SSHd to use alternate port
+  become: true
+  ansible.builtin.copy:
+    src: "assets/sshd_config.alternate_port"
+    dest: "/etc/ssh/sshd_config.d/alternate_port.conf"

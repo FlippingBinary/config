@@ -5,7 +5,8 @@
     - secrets.yml
   roles:
     - network
-    - ssh
+    - ssh-client
+    - ssh-server
 
 - name: Workstation
   hosts: workstation

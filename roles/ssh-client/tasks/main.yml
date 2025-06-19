@@ -1,0 +1,16 @@
+---
+- name: Manage SSH (Debian-like)
+  when: ansible_os_family == "Debian"
+  ansible.builtin.include_tasks: debian.yml
+  vars:
+    ssh_config_dir: "{{ ansible_user_dir }}/.ssh"
+
+- name: Manage SSH (WSL)
+  when: ansible_virtualization_type == "wsl"
+  ansible.builtin.include_tasks: wsl.yml
+
+- name: Manage SSH (Windows)
+  when: ansible_system == "Windows"
+  ansible.builtin.include_tasks: windows.yml
+  vars:
+    sshd_config_dir: "{{ lookup('env', 'PROGRAMDATA') }}\\ssh"
