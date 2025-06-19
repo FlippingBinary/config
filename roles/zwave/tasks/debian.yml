@@ -18,6 +18,7 @@
         zwave-js-ui:
           container_name: zwave-js-ui
           image: zwavejs/zwave-js-ui:latest
+          pull_policy: always
           restart: always
           tty: true
           stop_signal: SIGINT
