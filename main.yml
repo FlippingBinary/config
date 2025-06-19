@@ -44,7 +44,7 @@
     - proxmox
 
 - name: Artificial Intelligence
-  hosts: wsl.cougar
+  hosts: cougar-wsl
   vars_files:
     - secrets.yml
   roles:

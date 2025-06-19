@@ -5,8 +5,8 @@ all:
 
 development:
   hosts:
-    wsl.cougar:
-    wsl.thinkpad:
+    cougar-wsl:
+    thinkpad-wsl:
   children:
     workstation:
 
@@ -42,9 +42,9 @@ workstation:
 
 wsl:
   hosts:
-    wsl.cougar:
+    cougar-wsl:
       nvidia_container_toolkit: true
-    wsl.thinkpad:
+    thinkpad-wsl:
   vars:
     ansible_port: 2222
     ansible_user: jon
