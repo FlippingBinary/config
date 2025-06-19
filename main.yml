@@ -36,6 +36,13 @@
     - lazyvim
     - oh-my-posh
 
+- name: Content Creation
+  hosts: cougar
+  vars_files:
+    - secrets.yml
+  roles:
+    - illustration
+
 - name: Proxmox Host
   hosts: proxmox
   vars_files:

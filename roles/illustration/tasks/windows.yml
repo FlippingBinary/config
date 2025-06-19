@@ -1,0 +1,5 @@
+---
+- name: Install Inkscape
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: Inkscape.Inkscape
