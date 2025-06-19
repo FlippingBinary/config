@@ -12,9 +12,9 @@ development:
 
 iot:
   hosts:
-    baier:
-    kentucky:
-    york:
+    baier-iot:
+    kentucky-iot:
+    york-iot:
 
 kube:
   hosts:
