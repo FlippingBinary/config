@@ -62,4 +62,4 @@
   vars_files:
     - secrets.yml
   roles:
-    - zwave
+    - iot-gateway

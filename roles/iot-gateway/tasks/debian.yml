@@ -1,0 +1,168 @@
+---
+- name: Check for Zigbee device
+  ansible.builtin.stat:
+    path: "/dev/serial/by-id/{{ zigbee_device | default('not-present') }}"
+  register: zigbee_device_stat
+
+- name: Check for Z-Wave device
+  ansible.builtin.stat:
+    path: "/dev/serial/by-id/{{ zwave_device | default('not-present') }}"
+  register: zwave_device_stat
+
+- name: "Create AI service folder {{ item }}"
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+    state: directory
+  loop:
+    - /opt/swag
+    - /opt/zigbee
+    - /opt/zwave-js-ui
+
+- name: IOT gateway services in Docker
+  community.docker.docker_compose_v2:
+    project_name: iot-gateway
+    definition:
+      services: >-
+        {{
+          base_services
+          | combine(zigbee_service if zigbee_device_stat.stat.exists else {})
+          | combine(zwave_service if zwave_device_stat.stat.exists else {})
+        }}
+  vars:
+    base_services:
+      watchtower:
+        image: containrrr/watchtower
+        pull_policy: always
+        container_name: watchtower
+        environment:
+          TZ: America/New_York
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+        command: --cleanup --remove-volumes --schedule "0 0 3 * * *"
+        restart: unless-stopped
+
+      swag:
+        image: lscr.io/linuxserver/swag:latest
+        pull_policy: always
+        container_name: swag
+        develop:
+          watch:
+            - action: restart
+              path: /opt/swag/dns-conf/cloudflare.ini
+            - action: restart
+              path: /opt/swag/nginx/proxy-confs
+        cap_add:
+          - NET_ADMIN
+        environment:
+          PUID: "{{ ansible_user_id }}"
+          PGID: "{{ ansible_user_id }}"
+          TZ: America/New_York
+          URL: "{{ dns_domain }}"
+          PROPAGATION: 30 # Increased from default 10 seconds because of extra subdomains
+          SUBDOMAINS: kentucky-iot,zigbee,zwave
+          VALIDATION: dns
+          LOG_LEVEL: debug
+          DNSPLUGIN: cloudflare
+          EMAIL: jon@musselwhite.dev
+          ONLY_SUBDOMAINS: true
+          STAGING: false
+        volumes:
+          - /opt/swag:/config
+        ports:
+          - 80:80
+          - 443:443
+        restart: unless-stopped
+        healthcheck:
+          test: ["CMD-SHELL", "curl --fail https://kentucky-iot.{{ dns_domain }} || exit 1"]
+          interval: 1m
+          timeout: 10s
+          retries: 1
+
+    zigbee_service:
+      zigbee2mqtt:
+        container_name: zigbee2mqtt
+        image: ghcr.io/koenkk/zigbee2mqtt
+        pull_policy: always
+        restart: unless-stopped
+        tty: true
+        stop_signal: SIGINT
+        environment:
+          TZ: America/New_York
+          ZIGBEE2MQTT_CONFIG_MQTT_SERVER: "mqtts://home.{{ dns_domain }}:8883"
+          ZIGBEE2MQTT_CONFIG_MQTT_USER: "{{ zigbee_mqtt_username }}"
+          ZIGBEE2MQTT_CONFIG_MQTT_PASSWORD: "{{ zigbee_mqtt_password }}"
+          ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC: "zigbee2mqtt"
+          ZIGBEE2MQTT_CONFIG_SERIAL_PORT: /dev/zigbee
+          ZIGBEE2MQTT_CONFIG_SERIAL_ADAPTER: "ember"
+          ZIGBEE2MQTT_CONFIG_SERIAL_BAUDRATE: 115200
+          ZIGBEE2MQTT_CONFIG_SERIAL_RTSCTS: true
+          ZIGBEE2MQTT_CONFIG_FRONTEND_ENABLED: true
+          ZIGBEE2MQTT_CONFIG_FRONTEND_PORT: 8080
+          ZIGBEE2MQTT_CONFIG_HOMEASSISTANT_ENABLED: true
+          ZIGBEE2MQTT_CONFIG_ONBOARDING: false
+          ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL: 11
+          ZIGBEE2MQTT_CONFIG_ADVANCED_PAN_ID: "{{ zigbee_pan_id }}"
+          ZIGBEE2MQTT_CONFIG_ADVANCED_EXT_PAN_ID: "{{ zigbee_extended_pan_id | to_json }}"
+          ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY: "{{ zigbee_network_key | to_json }}"
+          ZIGBEE2MQTT_CONFIG_ADVANCED_LAST_SEEN: "ISO_8601_local"
+        devices:
+          - "/dev/serial/by-id/{{ zigbee_device | default('') }}:/dev/zigbee"
+        volumes:
+          - /opt/zigbee:/app/data
+        ports:
+          - "8080:8080" # port for web interface
+
+    zwave_service:
+      zwave-js-ui:
+        container_name: zwave-js-ui
+        image: zwavejs/zwave-js-ui:latest
+        pull_policy: always
+        restart: unless-stopped
+        tty: true
+        stop_signal: SIGINT
+        environment:
+          SESSION_SECRET: "{{ zwave_session | default(omit) }}"
+          ZWAVEJS_EXTERNAL_CONFIG: /usr/src/app/store/.config-db
+          TZ: America/New_York
+        devices:
+          - "/dev/serial/by-id/{{ zwave_device | default('') }}:/dev/zwave"
+        volumes:
+          - /opt/zwave-js-ui:/usr/src/app/store
+        ports:
+          - "8091:8091" # port for web interface
+          - "3000:3000" # port for Z-Wave JS websocket server
+
+- name: Configure Cloudflare DNS plugin (API Token)
+  community.general.ini_file:
+    path: /opt/swag/dns-conf/cloudflare.ini
+    option: dns_cloudflare_api_token
+    value: "{{ dns_cloudflare_api_token }}"
+    mode: '0600'
+
+- name: Configure Cloudflare DNS plugin (Email)
+  community.general.ini_file:
+    path: /opt/swag/dns-conf/cloudflare.ini
+    option: dns_cloudflare_email
+    mode: '0600'
+    state: absent
+
+- name: Configure Cloudflare DNS plugin (API Key)
+  community.general.ini_file:
+    path: /opt/swag/dns-conf/cloudflare.ini
+    option: dns_cloudflare_api_key
+    mode: '0600'
+    state: absent
+
+- name: Configure Proxies
+  vars:
+    proxies:
+      - { proxy_subdomain: 'zigbee', proxy_name: 'zigbee2mqtt', proxy_port: 8080 }
+      - { proxy_subdomain: 'zwave', proxy_name: 'zwave-js-ui', proxy_port: 8091 }
+  ansible.builtin.template:
+    src: assets/swag.conf.j2
+    dest: "/opt/swag/nginx/proxy-confs/{{ item.proxy_subdomain }}.subdomain.conf"
+  loop: "{{ proxies }}"
+
