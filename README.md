@@ -38,6 +38,12 @@ ansible-vault edit secrets.yml --vault-password-file secrets.sh
 ansible-playbook --vault-password-file secrets.sh main.yml
 ```
 
+- Run playbook with secrets unlocked on just the local host:
+
+```shell
+ansible-playbook -i inventory.yml -l cougar-wsl -e ansible_connection=local --vault-password-file secrets.sh main.yml
+```
+
 ## DSC
 
 ### Dependencies
