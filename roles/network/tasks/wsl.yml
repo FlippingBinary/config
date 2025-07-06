@@ -1,9 +1,9 @@
 ---
-- name: Set hostname
+- name: "Set hostname to {{ ansible_hostname }}"
   become: true
   # notify: Restart WSL
   community.general.ini_file:
     path: /etc/wsl.conf
     section: network
     option: hostname
-    value: "{{ ansible_hostname }}"
+    value: "{{ inventory_hostname }}"
