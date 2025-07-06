@@ -5,7 +5,6 @@
     name:
       - nfs-common
     state: present
-    update_cache: true
 
 - name: Create folder for Jellyfin
   become: true

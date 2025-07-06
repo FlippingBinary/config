@@ -10,7 +10,6 @@
       - ripgrep
       - unzip
     state: present
-    update_cache: true
 
 - name: Clone LazyVim configuration
   ansible.builtin.git:

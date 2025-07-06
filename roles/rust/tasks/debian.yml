@@ -6,7 +6,6 @@
       - rustup
       - build-essential
     state: present
-    update_cache: true
 
 - name: Put cargo in PATH
   become: true

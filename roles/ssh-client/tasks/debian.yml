@@ -5,4 +5,3 @@
     name:
       - openssh-client
     state: present
-    update_cache: true

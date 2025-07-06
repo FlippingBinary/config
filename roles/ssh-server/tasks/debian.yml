@@ -5,7 +5,6 @@
     name:
       - openssh-server
     state: present
-    update_cache: true
 
 - name: Configure SSHd to require keys
   become: true

@@ -29,7 +29,6 @@
       - software-properties-common
       - python3-apt
     state: present
-    update_cache: true
 
 - name: Get Docker GPG key
   become: true
@@ -68,7 +67,6 @@
       - containerd.io
       - docker-buildx-plugin
       - docker-compose-plugin
-    update_cache: true
     state: present
 
 - name: Get NVIDIA Container Toolkit GPG key
@@ -107,7 +105,6 @@
   ansible.builtin.apt:
     name:
       - nvidia-container-toolkit
-    update_cache: true
     state: present
 
 - name: Add Ansible user to docker group

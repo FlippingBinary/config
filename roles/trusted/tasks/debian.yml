@@ -5,7 +5,6 @@
     name:
       - keepassxc
     state: present
-    update_cache: true
 
 - name: Install Synology Drive (Debian-like)
   become: true

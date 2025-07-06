@@ -38,7 +38,6 @@
   ansible.builtin.apt:
     name: lazygit
     state: present
-    update_cache: true
   when: >
     (ansible_distribution == "Debian" and ansible_distribution_major_version | int >= 13) or
     (ansible_distribution == "Ubuntu" and ansible_distribution_version is version('25.10', '>='))

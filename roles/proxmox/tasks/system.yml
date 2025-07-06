@@ -6,7 +6,6 @@
       - python3-proxmoxer
       - python3-requests
     state: present
-    update_cache: true
 
 - name: Disable subscription nag
   ansible.builtin.lineinfile:
