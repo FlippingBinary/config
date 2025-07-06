@@ -1,4 +1,8 @@
 ---
+- name: Manage networking (POSIX)
+  when: ansible_system != "Windows" and ansible_virtualization_type != "wsl"
+  ansible.builtin.include_tasks: posix.yml
+
 - name: Manage networking (WSL)
   when: ansible_virtualization_type == "wsl"
   ansible.builtin.include_tasks: wsl.yml

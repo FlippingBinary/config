@@ -1,0 +1,5 @@
+---
+- name: Set hostname (POSIX)
+  become: true
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}.{{ dns_domain }}"
