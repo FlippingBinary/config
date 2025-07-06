@@ -15,7 +15,7 @@
   roles:
     - comms
     - docs
-    - musicplayer
+    - mediaplayer
     - protect
     - trusted
     - docker
