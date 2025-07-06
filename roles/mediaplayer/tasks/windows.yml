@@ -4,3 +4,8 @@
   vars:
     id: 9P4CLT2RJ1RS
     source: msstore
+- name: Install VLC
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: VideoLAN.VLC
+    source: winget
