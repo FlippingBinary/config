@@ -9,3 +9,8 @@
   vars:
     id: VideoLAN.VLC
     source: winget
+- name: Install ImageMagick
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: ImageMagick.Q16-HDRI
+    source: winget
