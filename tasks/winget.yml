@@ -6,6 +6,7 @@
       Source: "{{ source | default('winget') }}"
       Version: "{{ version | default(omit) }}"
       Ensure: "{{ ensure | default('present') }}"
+      Override: "{{ override | default() }}"
     script: |
       [CmdletBinding(SupportsShouldProcess)]
       param (
@@ -13,6 +14,7 @@
         [String] $Source = 'winget'
         [String] $Version = $null,
         [String] $Ensure = 'present'
+        [String] $Override = $null,
       )
 
       $Ansible.Changed = $false
@@ -56,15 +58,24 @@
         if ($PSCmdlet.ShouldProcess('target')) {
           $action = if ($before_version) { "upgrade" } else { "install" }
 
-          $process = Start-Process winget -ArgumentList @(
-            $action,
-            "--accept-package-agreements",
-            "--accept-source-agreements",
-            "--disable-interactivity",
-            "--source", $Source,
-            "--id", $Id,
-            "--exact"
-          ) -Wait -PassThru
+          $arguments = @(
+              $action,
+              "--accept-package-agreements",
+              "--accept-source-agreements",
+              "--disable-interactivity",
+              "--source", $Source,
+              "--id", $Id,
+              "--exact"
+          )
+
+          # Conditionally add --override if $Override is not null or empty
+          if ($Override) {
+              $arguments += "--override"
+              $arguments += $Override
+          }
+
+          # Start the process
+          $process = Start-Process winget -ArgumentList $arguments -Wait -PassThru
 
           $Ansible.Result.reboot_required = $process.ExitCode -eq 3010
         }

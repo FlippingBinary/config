@@ -1,0 +1,13 @@
+---
+- name: Install Yubikey Mini Driver
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: Yubico.YubiKeySmartCardMinidriver
+    override: "INSTALL_LEGACY_MODE=1"
+
+# TODO: Install the Windows SDK with Visual Studio
+
+- name: Install ScSignTool (Windows)
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: MGTEK.SmartCardTools

@@ -20,6 +20,13 @@
     - trusted
     - docker
 
+- name: Yubikey station
+  hosts: yubikey
+  vars_files:
+    - secrets.yml
+  roles:
+    - yubikey
+
 - name: Kubernetes
   hosts: kube:worker
   vars_files:
