@@ -1,9 +1,9 @@
 ---
-- name: Manage document editors (Debian-like)
+- name: Manage office apps (Debian-like)
   when: ansible_os_family == "Debian"
   ansible.builtin.include_tasks: debian.yml
 
-- name: Manage document editors (Windows)
+- name: Manage office apps (Windows)
   when: ansible_system == "Windows"
   ansible.builtin.include_tasks: windows.yml
 
