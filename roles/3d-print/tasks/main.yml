@@ -1,0 +1,4 @@
+---
+- name: Manage comms (Windows)
+  when: ansible_system == "Windows"
+  ansible.builtin.include_tasks: windows.yml
