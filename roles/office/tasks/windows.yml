@@ -3,3 +3,8 @@
   ansible.builtin.include_tasks: winget.yml
   vars:
     id: SoftMaker.FreeOffice.2024
+
+- name: Install LibreOffice
+  ansible.builtin.include_tasks: winget.yml
+  vars:
+    id: TheDocumentFoundation.LibreOffice
