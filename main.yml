@@ -14,7 +14,7 @@
     - secrets.yml
   roles:
     - comms
-    - docs
+    - office
     - media
     - protect
     - trusted
