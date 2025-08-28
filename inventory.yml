@@ -3,6 +3,7 @@ all:
     portainer:
     proxmox:
       ansible_user: root
+    jellyfin:
 
 development:
   hosts:

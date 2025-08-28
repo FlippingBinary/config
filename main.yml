@@ -57,6 +57,13 @@
   roles:
     - illustration
 
+- name: Media Server
+  hosts: jellyfin
+  vars_files:
+    - secrets.yml
+  roles:
+    - jellyfin
+
 - name: Proxmox Host
   hosts: proxmox
   vars_files:

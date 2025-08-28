@@ -27,6 +27,18 @@
     project_name: jellyfin
     definition:
       services:
+        # Automatically update container images when there's a new release
+        watchtower:
+          image: containrrr/watchtower
+          pull_policy: always
+          container_name: watchtower
+          environment:
+            TZ: America/New_York
+          volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+          command: --cleanup --remove-volumes --schedule "0 0 3 * * *"
+          restart: unless-stopped
+
         jellyfin:
           image: jellyfin/jellyfin:latest
           restart: always
