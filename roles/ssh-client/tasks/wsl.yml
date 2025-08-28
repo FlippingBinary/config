@@ -38,6 +38,7 @@
     scope: user
     state: "{{ 'restarted' if (ssh_agent_relay_service is changed) else 'started' }}"
     enabled: true
+  ignore_errors: true
 
 - name: Configure ssh agent environment variable
   become: true
