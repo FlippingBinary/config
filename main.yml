@@ -34,6 +34,13 @@
   roles:
     - kubernetes
 
+- name: Portainer
+  hosts: portainer
+  vars_files:
+    - secrets.yml
+  roles:
+    - portainer
+
 - name: Development Environment
   hosts: development
   vars_files:

@@ -1,0 +1,120 @@
+---
+- name: Get UID of the unprivileged user
+  ansible.builtin.command: id -u {{ ansible_user_id }}
+  register: user_uid
+  changed_when: false
+
+- name: Get GID of the unprivileged user
+  ansible.builtin.command: id -g {{ ansible_user_id }}
+  register: user_gid
+  changed_when: false
+
+- name: Set UID and GID
+  ansible.builtin.set_fact:
+    user_uid: "{{ user_uid.stdout }}"
+    user_gid: "{{ user_gid.stdout }}"
+
+- name: "Create Portainer data folder"
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: "{{ user_uid }}"
+    group: "{{ user_gid }}"
+    state: directory
+  loop:
+    - /opt/portainer
+    - /opt/traefik
+
+- name: Manage Portainer services
+  community.docker.docker_compose_v2:
+    project_name: portainer
+    definition:
+      services:
+        # Automatically update container images when there's a new release
+        watchtower:
+          image: containrrr/watchtower
+          pull_policy: always
+          container_name: watchtower
+          environment:
+            TZ: America/New_York
+          volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+          command: --cleanup --remove-volumes --schedule "0 0 3 * * *"
+          restart: unless-stopped
+
+        traefik:
+          container_name: traefik
+          image: traefik:v3.5.1
+          security_opt:
+            - "no-new-privileges:true"
+          command:
+            - "--api=true"
+            - "--api.dashboard=true"
+            - "--api.insecure=false"
+            - "--certificatesresolvers.letsencrypt.acme.dnsChallenge.propagation.delayBeforeChecks=0"
+            - "--certificatesresolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare"
+            - "--certificatesresolvers.letsencrypt.acme.dnsChallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
+            - "--certificatesresolvers.letsencrypt.acme.dnsChallenge=true"
+            - "--certificatesresolvers.letsencrypt.acme.email={{ letsencrypt_email_address }}"
+            - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+            - "--entrypoints.http.address=:80"
+            - "--entrypoints.https.address=:443"
+            - "--entryPoints.https.http3"
+            - "--entryPoints.https.http3.advertisedport=443"
+            - "--providers.docker=true"
+            - "--log.level=DEBUG"
+            - "--accesslog=true"
+          environment:
+            CLOUDFLARE_DNS_API_TOKEN: "{{ dns_cloudflare_api_token }}"
+          labels:
+            - "traefik.enable=true"
+            - "traefik.http.middlewares.to-https.redirectscheme.scheme=https"
+            - "traefik.http.routers.to-https.entrypoints=http"
+            - "traefik.http.routers.to-https.middlewares=to-https"
+            - "traefik.http.routers.to-https.rule=HostRegexp(`{host:.+}`)"
+
+            - "traefik.http.routers.dashboard.rule=Host(`traefik.portainer.{{ dns_domain }}`)"
+            - "traefik.http.routers.dashboard.service=api@internal"
+            - "traefik.http.routers.dashboard.entrypoints=https"
+            - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+          ports:
+            - 80:80
+            - 443:443/tcp
+            - 443:443/udp
+          restart: unless-stopped
+          volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - /opt/traefik:/letsencrypt
+          healthcheck:
+            test: ["CMD-SHELL", "curl --fail https://portainer.{{ dns_domain }} || exit 1"]
+            interval: 1m
+            timeout: 10s
+            retries: 1
+
+        portainer:
+          image: portainer/portainer-ce:latest
+          pull_policy: always
+          command: -H unix:///var/run/docker.sock
+          container_name: portainer
+          environment:
+            TZ: America/New_York
+          volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - /opt/portainer:/data
+          restart: unless-stopped
+          labels:
+            # Frontend
+            - "traefik.enable=true"
+            - "traefik.http.routers.portainer.rule=Host(`portainer.{{ dns_domain }}`)"
+            - "traefik.http.routers.portainer.entrypoints=https"
+            - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+            - "traefik.http.routers.portainer.service=portainer"
+            - "traefik.http.routers.portainer.tls.certresolver=letsencrypt"
+
+            # Edge
+            - "traefik.http.routers.edge.rule=Host(`edge.{{ dns_domain }}`)"
+            - "traefik.http.routers.edge.entrypoints=https"
+            - "traefik.http.services.edge.loadbalancer.server.port=8000"
+            - "traefik.http.routers.edge.service=edge"
+            - "traefik.http.routers.edge.tls.certresolver=letsencrypt"
+

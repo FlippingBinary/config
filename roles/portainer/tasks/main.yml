@@ -1,0 +1,4 @@
+---
+- name: Manage Portainer (Debian-like)
+  when: ansible_os_family == "Debian"
+  ansible.builtin.include_tasks: debian.yml
