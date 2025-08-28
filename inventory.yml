@@ -47,7 +47,6 @@ workstation:
 wsl:
   hosts:
     cougar-wsl:
-      nvidia_container_toolkit: true
     thinkpad-wsl:
   vars:
     ansible_port: 2222

@@ -69,9 +69,19 @@
       - docker-compose-plugin
     state: present
 
+- name: Check for NVIDIA GPU using nvidia-smi
+  ansible.builtin.command: nvidia-smi
+  register: nvidia_smi_check
+  changed_when: false
+  failed_when: false
+
+- name: Set fact if NVIDIA GPU is present and usable
+  ansible.builtin.set_fact:
+    has_nvidia_gpu: "{{ nvidia_smi_check.rc == 0 }}"
+
 - name: Get NVIDIA Container Toolkit GPG key
   become: true
-  when: nvidia_container_toolkit
+  when: has_nvidia_gpu
   register: gpg_key_download
   ansible.builtin.get_url:
     url: https://nvidia.github.io/libnvidia-container/gpgkey
@@ -80,7 +90,7 @@
 
 - name: Add NVIDIA Container Toolkit repository
   become: true
-  when: nvidia_container_toolkit
+  when: has_nvidia_gpu
   ansible.builtin.apt_repository:
     repo: >
       deb
@@ -101,7 +111,7 @@
 
 - name: Install NVIDIA Container Toolkit
   become: true
-  when: nvidia_container_toolkit
+  when: has_nvidia_gpu
   ansible.builtin.apt:
     name:
       - nvidia-container-toolkit
